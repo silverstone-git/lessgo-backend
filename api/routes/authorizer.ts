@@ -1,11 +1,11 @@
 
 // checks if user is authorized or not
 
-function isAuthed(body: any): boolean {
+function isAuthed(auth: any): boolean {
     //
 	let result = false;
-    console.log(`received authorization toucan is: ${body.Authorization}`);
-    if(body.Authorization != undefined && (body.Authorization.split(' ').length == 2 || body.Authorization.split(' ')[1] === 'breh')) {
+    console.log(`received authorization toucan is: ${auth}`);
+    if(auth != undefined && (auth.split(' ').length == 2 || auth.split(' ')[1] === 'breh')) {
         result = true;
     }
     return result;

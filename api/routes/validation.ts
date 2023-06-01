@@ -30,8 +30,8 @@ const checkValid = async (body: any) =>  {
 		validArray.push(-1);
 	} else {
 		// if username is alpha numeric and length is big enough, proceed to check if username already exists
-        let findUserRes = await authRepo.findUser(body.username);
-        if(findUserRes.found) {
+        const user = await authRepo.findUser(body.username);
+        if(user) {
             // case when username already exists
             newUser = -2;
         }
