@@ -1,10 +1,15 @@
 import * as express from 'express';
+import * as authRepo from './auth_repository';
+import jwt from 'jsonwebtoken';
 import checkValid from './validation';
 import isAuthed from './authorizer';
-import * as authRepo from './auth_repository';
 import { User } from './models';
 
+import 'dotenv/config';
+
 const router = express.Router();
+
+const jwtSecret: string = process.env.JWT_SECRET == undefined ? '' : process.env.JWT_SECRET;
 
 router.post('/isLoggedIn', (req: any, res: any) => {
 	// check if logged in given a jwt header
@@ -30,9 +35,7 @@ router.post('/login', async (req: any, res: any) => {
     if(user) {
         // the case if user exists in our database
         if(await authRepo.verifyPassword(user.password, req.body.password)) {
-            // const authorization: string  = jwt.sign({name: username}, jwtSecret);
-            console.log("logging in....");
-            const authorization = "breh"
+            const authorization: string  = jwt.sign({name: username}, jwtSecret);
             await authRepo.updateLastLoggedIn(username, new Date());
             res.status(200).json({'Authorization': `Bearer ${authorization}`, 'succ': true})
         } else {
