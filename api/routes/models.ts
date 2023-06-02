@@ -12,6 +12,11 @@ export class User {
         this.lastLogin = lastLogin;
         this.joinedDt = joinedDt;
     }
+
+    public static fromMap(map: any) {
+        // returns a user instance
+        return new User(map.username, map.email, map.password, map.lastLogin, map.joinedDt);
+    }
 }
 
 

@@ -31,16 +31,13 @@ router.post('/login', async (req: any, res: any) => {
     // take credentials from body
     // give back the jwt or a 403 with succ: false
     const username = req.body.username;
-    const user = await authRepo.findUser(username);
-    if(user) {
-        // the case if user exists in our database
-        if(await authRepo.verifyPassword(user.password, req.body.password)) {
+    // 1 means all good, 0 means wrong password, -1 means user not even found in database
+    const toAuthenticateOrNot = await authRepo.loginUser(username, req.body.password);
+    if(toAuthenticateOrNot == 1) {
             const authorization: string  = jwt.sign({name: username}, jwtSecret);
-            await authRepo.updateLastLoggedIn(username, new Date());
             res.status(200).json({'Authorization': `Bearer ${authorization}`, 'succ': true})
-        } else {
+    } else if(toAuthenticateOrNot == 0) {
             res.status(403).json({'succ': false, 'message': 'wrong_password'});
-        }
     } else {
         res.status(404).json({'succ': false, 'message': 'doesnt_exist'});
     }
@@ -63,8 +60,11 @@ router.post('/create', async (req: any, res: any) => {
         // sign the user up	
         // make the validArray[0] = -2 if connection error
         const hashedPassword = await authRepo.hashedPassword(req.body.password);
-        const result = authRepo.createUser(new User(username, email, hashedPassword));
-        res.status(201).json(result);
+        const exitCode = await authRepo.createUser(new User(username, email, hashedPassword));
+        if(exitCode == 0) {
+            //
+            res.status(201).json({"succ": true, "message" : "User has been successfully created, please proceed to Login"});
+        }
 
 	} else {
 		// display user suggestion on correct input at frontend
