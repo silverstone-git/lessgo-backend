@@ -31,7 +31,6 @@ const checkValid = async (body: any) =>  {
 	} else {
 		// if username is alpha numeric and length is big enough, proceed to check if username already exists
         const found = await authRepo.findUser(body.username);
-		console.log(`result of find user in validation step is: ${found}, username being - ${found}`);
         if(found.username != "") {
             // case when username already exists
             newUser = -2;
@@ -51,7 +50,7 @@ const checkValid = async (body: any) =>  {
     // 2nd index indicates whether password is short or not
 	body.password.length < 8 ? validArray.push(0) : validArray.push(1);
 
-	console.log(`Valid array in validation ts is: ${validArray}`);
+	// console.log(`Valid array in validation ts is: ${validArray}`);
 
 	return validArray;
 

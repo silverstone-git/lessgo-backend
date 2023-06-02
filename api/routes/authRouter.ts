@@ -47,11 +47,12 @@ router.post('/create', async (req: any, res: any) => {
     // get the credentials using the
     const username = req.body.username;
     const email = req.body.email;
+    const vendorReq = req.body.vendorReq;
 
     if(isAuthed(req.body.Authorization)) {
         // if the user is authed up already, dont do this creation
 
-        res.status(200).json({"message": "already_authorized"});
+        res.status(200).json({ "succ": false, "fail": "Already Logged In!"});
         return;
     }
     
@@ -60,14 +61,12 @@ router.post('/create', async (req: any, res: any) => {
         // sign the user up	
         // make the validArray[0] = -2 if connection error
         const hashedPassword = await authRepo.hashedPassword(req.body.password);
-        const exitCode = await authRepo.createUser(new User(username, email, hashedPassword));
-        console.log(`create user function exited with exitCode: ${exitCode}`)
+        const exitCode = await authRepo.createUser(new User(username, email, hashedPassword, vendorReq));
         if(exitCode == 0) {
-            //
             res.status(201).json({"succ": true, "message" : "User has been successfully created, please proceed to Login"});
         } else if(exitCode == -2) {
-            // if already exists
-            res.status(500).json({"succ": false, "message" : "Server Error"});
+            // if Connection Error
+            res.status(500).json({"succ": false, "fail": "Server Error"});
         }
 
 	} else {

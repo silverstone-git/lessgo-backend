@@ -4,7 +4,7 @@
 function isAuthed(auth: any): boolean {
     //
 	let result = false;
-    console.log(`received authorization toucan is: ${auth}`);
+    // console.log(`received authorization toucan is: ${auth}`);
     if(auth != undefined && (auth.split(' ').length == 2 || auth.split(' ')[1] === 'breh')) {
         result = true;
     }

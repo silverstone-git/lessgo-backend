@@ -39,7 +39,7 @@ export async function findUser(username: string, passedConnection: Connection | 
     // finding the user by username
     let found = false;
 
-    let user: User = new User('', '', '');
+    let user: User = new User('', '', '', false);
 
     if(typeof passedConnection != 'boolean') {
         // if already a connection exists, the function uses that
@@ -50,7 +50,7 @@ export async function findUser(username: string, passedConnection: Connection | 
             passedConnection.query(`SELECT * FROM users WHERE username = '${username}' `, (err, rows, fields) => {
                 // handle the query result
                 if(err) {
-                    console.log(err);
+                    // console.log(err);
                     resolve(user);
                 }
                 if(rows[0]) {
@@ -58,7 +58,7 @@ export async function findUser(username: string, passedConnection: Connection | 
                     user = User.fromMap(rows[0]);
                     resolve(user);
                 } else {
-                    console.log("USER NOT FOUND")
+                    // console.log("USER NOT FOUND")
                     resolve(user);
                 }
             });
@@ -71,7 +71,7 @@ export async function findUser(username: string, passedConnection: Connection | 
             myConnection.query(`SELECT * FROM users WHERE username = '${username}' `, async (err, rows, fields) => {
                 // handle the query result
                 if(err) {
-                    console.log(err);
+                    // console.log(err);
                     resolve(user);
                 }
                 if(rows[0]) {
@@ -79,7 +79,7 @@ export async function findUser(username: string, passedConnection: Connection | 
                     user = User.fromMap(rows[0]);
                     resolve(user);
                 } else {
-                    console.log("USER NOT FOUND");
+                    // console.log("USER NOT FOUND");
                     resolve(user);
                 }
             });
@@ -100,7 +100,6 @@ export async function loginUser(username: string, enteredPassword: string) {
             // the case when user is found in the database
             const isVerified = await verifyPassword(userInDB.password, enteredPassword);
             if(isVerified) {
-                console.log('password has been confirmed in login user function!');
                 await updateLastLoggedIn(username, new Date(), connectionForLogIn);
                 connectionForLogIn.end();
                 resolve(1);
@@ -119,28 +118,24 @@ export async function createUser(user: User) {
     // finding the user by username
     const connectionForCreate = await connection(mysqlDBName);
     connectionForCreate.connect();
-    // const foundUser = await findUser(user.username, connectionForCreate);
-    // if(foundUser.username != "") {
-        // connectionForCreate.end();
-        // return -1;
-    // } else {
-        // create the user here
     let exitCode = 0;
-    connectionForCreate.query(`INSERT INTO
+    connectionForCreate.query(`
+    INSERT INTO
     users (user_id, username, email, password, joined_dt)
     VALUES (
     ${encodeUuidToNumber(uuidv4())},
     '${user.username}',
     '${user.email}',
     '${user.password}',
+    ${user.isVendor},
     '${jsDateToMysql(new Date())}'
     )
-    `, (err, rows, fields) => {
+    `,
+    (err, rows, fields) => {
         if(err) {
-            console.log(err);
+            // console.log(err);
             exitCode = -2;
         }
-        console.log("user has been created successfully!!");
         exitCode = 0;
     })
     connectionForCreate.end();
@@ -156,9 +151,9 @@ export async function updateLastLoggedIn(username: string, date: Date,  passedCo
             passedConnection.query(`UPDATE users SET last_login = '${jsDateToMysql(date)}' WHERE username = '${username}'`, (error, rows, fields) => {
                 // handler func for result of 
                 if(error) {
-                    console.log(error);
+                    // console.log(error);
+                    resolve({'succ': false});
                 }
-                console.log("update last logged in has been successfully executed");
                 resolve({'succ': true});
             });
         })
@@ -169,9 +164,9 @@ export async function updateLastLoggedIn(username: string, date: Date,  passedCo
             myConnection.query(`UPDATE users SET last_login = '${jsDateToMysql(date)}' WHERE username = '${username}'`, (error, rows, fields) => {
                 // handler func for result of 
                 if(error) {
-                    console.log(error);
+                    // console.log(error);
+                    resolve({'succ': false})
                 }
-                console.log("update last logged in has been successfully executed");
                 resolve({'succ': true});
             });
             myConnection.end()
