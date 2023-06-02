@@ -50,7 +50,7 @@ export async function findUser(username: string, passedConnection: Connection | 
             passedConnection.query(`SELECT * FROM users WHERE username = '${username}' `, (err, rows, fields) => {
                 // handle the query result
                 if(err) {
-                    // console.log(err);
+                    console.log(err);
                     resolve(user);
                 }
                 if(rows[0]) {
@@ -71,7 +71,7 @@ export async function findUser(username: string, passedConnection: Connection | 
             myConnection.query(`SELECT * FROM users WHERE username = '${username}' `, async (err, rows, fields) => {
                 // handle the query result
                 if(err) {
-                    // console.log(err);
+                    console.log(err);
                     resolve(user);
                 }
                 if(rows[0]) {
@@ -121,7 +121,7 @@ export async function createUser(user: User) {
     let exitCode = 0;
     connectionForCreate.query(`
     INSERT INTO
-    users (user_id, username, email, password, joined_dt)
+    users (user_id, username, email, password, is_vendor, joined_dt)
     VALUES (
     ${encodeUuidToNumber(uuidv4())},
     '${user.username}',
@@ -133,10 +133,9 @@ export async function createUser(user: User) {
     `,
     (err, rows, fields) => {
         if(err) {
-            // console.log(err);
+            console.log(err);
             exitCode = -2;
         }
-        exitCode = 0;
     })
     connectionForCreate.end();
     return exitCode;

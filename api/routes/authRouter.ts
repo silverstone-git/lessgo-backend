@@ -47,7 +47,7 @@ router.post('/create', async (req: any, res: any) => {
     // get the credentials using the
     const username = req.body.username;
     const email = req.body.email;
-    const vendorReq = req.body.vendorReq;
+    const vendorReq = req.body.vendorReq === "vendor" ? true : false;
 
     if(isAuthed(req.body.Authorization)) {
         // if the user is authed up already, dont do this creation
