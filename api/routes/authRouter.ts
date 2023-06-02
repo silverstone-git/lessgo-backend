@@ -61,9 +61,13 @@ router.post('/create', async (req: any, res: any) => {
         // make the validArray[0] = -2 if connection error
         const hashedPassword = await authRepo.hashedPassword(req.body.password);
         const exitCode = await authRepo.createUser(new User(username, email, hashedPassword));
+        console.log(`create user function exited with exitCode: ${exitCode}`)
         if(exitCode == 0) {
             //
             res.status(201).json({"succ": true, "message" : "User has been successfully created, please proceed to Login"});
+        } else if(exitCode == -2) {
+            // if already exists
+            res.status(500).json({"succ": false, "message" : "Server Error"});
         }
 
 	} else {

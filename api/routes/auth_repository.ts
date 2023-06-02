@@ -38,7 +38,6 @@ function encodeUuidToNumber(myUuid: string) {
 export async function findUser(username: string, passedConnection: Connection | boolean = false) {
     // finding the user by username
     let found = false;
-    console.log(`user with username ${username} is being searched`);
 
     let user: User = new User('', '', '');
 
@@ -46,124 +45,141 @@ export async function findUser(username: string, passedConnection: Connection | 
         // if already a connection exists, the function uses that
         // instead of making a new one, used in batch actions where
         // the user's presence in db is needed to be validated
-        await passedConnection.query(`SELECT * FROM users WHERE username = '${username}' `, async (err, rows, fields) => {
-            // handle the query result
-            console.log(`received result for SELECT is: ${rows}, ${typeof rows}, ${err} `);
-            if(rows.length > 0) {
-                found = true;
-                console.log(`user found in findUser is: ${rows[0]} `);
-                user = User.fromMap(rows[0]);
-                console.log(`user ${user.username} made from result row is: ${user}`);
-            } else {
-                console.log("the user wasnt found! keeping found as false only")
-            }
+        return new Promise<User>(async (resolve, reject) => {
+            // handler
+            passedConnection.query(`SELECT * FROM users WHERE username = '${username}' `, (err, rows, fields) => {
+                // handle the query result
+                if(err) {
+                    console.log(err);
+                    resolve(user);
+                }
+                if(rows[0]) {
+                    found = true;
+                    user = User.fromMap(rows[0]);
+                    resolve(user);
+                } else {
+                    console.log("USER NOT FOUND")
+                    resolve(user);
+                }
+            });
         });
     } else {
-        //
+    
         const myConnection = await connection(mysqlDBName);
-        myConnection.connect();
-        await myConnection.query(`SELECT * FROM users WHERE username = '${username}' `, async (err, rows, fields) => {
-            // handle the query result
-            console.log(`received result for SELECT is: ${rows}, ${typeof rows}, ${err} `);
-            if(rows.length > 0) {
-                found = true;
-                console.log(`user found in findUser is: ${rows[0]} `);
-                user = User.fromMap(rows[0]);
-            } else {
-                console.log("the user wasnt found! keeping found as false only");
-            }
+        return new Promise<User>(async (resolve, reject) => {
+            myConnection.connect();
+            myConnection.query(`SELECT * FROM users WHERE username = '${username}' `, async (err, rows, fields) => {
+                // handle the query result
+                if(err) {
+                    console.log(err);
+                    resolve(user);
+                }
+                if(rows[0]) {
+                    found = true;
+                    user = User.fromMap(rows[0]);
+                    resolve(user);
+                } else {
+                    console.log("USER NOT FOUND");
+                    resolve(user);
+                }
+            });
+            myConnection.end();
         });
-        myConnection.end();
     }
-
-    return user;
 
 }
 
 
 export async function loginUser(username: string, enteredPassword: string) {
 
-    const connectionForLogIn = await connection(mysqlDBName);
-    connectionForLogIn.connect();
-    console.log(`searching for the user in login......`);
-    const userInDB = await findUser(username, connectionForLogIn);
-    console.log(`user in db is: ${userInDB}, ${userInDB.username} ${userInDB.password} ${userInDB.email} ${userInDB.joinedDt}`);
-    if(userInDB.username != "") {
-        // the case when user is found in the database
-        if(await verifyPassword(userInDB.password, enteredPassword)) {
-            console.log('password has been confirmed in login user function!');
-            await updateLastLoggedIn(username, new Date(), connectionForLogIn);
-            connectionForLogIn.end();
-            return 1;
+    return new Promise<number>(async (resolve, reject) => {
+        const connectionForLogIn = await connection(mysqlDBName);
+        connectionForLogIn.connect();
+        const userInDB: User = await findUser(username, connectionForLogIn);
+        if(userInDB.username != "") {
+            // the case when user is found in the database
+            const isVerified = await verifyPassword(userInDB.password, enteredPassword);
+            if(isVerified) {
+                console.log('password has been confirmed in login user function!');
+                await updateLastLoggedIn(username, new Date(), connectionForLogIn);
+                connectionForLogIn.end();
+                resolve(1);
+            } else {
+                connectionForLogIn.end();
+                resolve(0);
+            }
         } else {
             connectionForLogIn.end();
-            return 0;
+            resolve(-1);
         }
-    } else {
-        connectionForLogIn.end();
-        return -1;
-    }
+    })
 }
 
 export async function createUser(user: User) {
     // finding the user by username
-    console.log(`user being created -> ${user.username}, ${user.email}, with password ${user.password}`);
     const connectionForCreate = await connection(mysqlDBName);
     connectionForCreate.connect();
-    const foundUser = await findUser(user.username, connectionForCreate);
-    if(foundUser.username != "") {
-        connectionForCreate.end();
-        return -1;
-    } else {
+    // const foundUser = await findUser(user.username, connectionForCreate);
+    // if(foundUser.username != "") {
+        // connectionForCreate.end();
+        // return -1;
+    // } else {
         // create the user here
-        connectionForCreate.query(`INSERT INTO
-        users (user_id, username, email, password, joined_dt)
-        VALUES (
-        ${encodeUuidToNumber(uuidv4())},
-        '${user.username}',
-        '${user.email}',
-        '${user.password}',
-        '${jsDateToMysql(new Date())}'
-        )
-        `, (err, rows, fields) => {
-            if(err) {
-                throw err;
-            }
-            console.log("user has been created successfully!!");
-        })
-        connectionForCreate.end();
-        return 0;
-    }
+    let exitCode = 0;
+    connectionForCreate.query(`INSERT INTO
+    users (user_id, username, email, password, joined_dt)
+    VALUES (
+    ${encodeUuidToNumber(uuidv4())},
+    '${user.username}',
+    '${user.email}',
+    '${user.password}',
+    '${jsDateToMysql(new Date())}'
+    )
+    `, (err, rows, fields) => {
+        if(err) {
+            console.log(err);
+            exitCode = -2;
+        }
+        console.log("user has been created successfully!!");
+        exitCode = 0;
+    })
+    connectionForCreate.end();
+    return exitCode;
+    // }
 }
 
 
 export async function updateLastLoggedIn(username: string, date: Date,  passedConnection: Connection | boolean = false) {
     // parse from string and then put the date back into mysql formatted string
     if(typeof passedConnection != 'boolean') {
-        passedConnection.query(`UPDATE users SET last_login = '${jsDateToMysql(date)}' WHERE username = ${username}`, (error, rows, fields) => {
-            // handler func for result of 
-            if(error) {
-                throw error;
-            }
-            console.log("update last logged in has been successfully executed");
-        });
+        return new Promise<object>((resolve, reject) => {
+            passedConnection.query(`UPDATE users SET last_login = '${jsDateToMysql(date)}' WHERE username = '${username}'`, (error, rows, fields) => {
+                // handler func for result of 
+                if(error) {
+                    console.log(error);
+                }
+                console.log("update last logged in has been successfully executed");
+                resolve({'succ': true});
+            });
+        })
     } else {
-        //
         const myConnection = await connection(mysqlDBName);
-        myConnection.connect();
-        myConnection.query(`UPDATE users SET last_login = '${jsDateToMysql(date)}' WHERE username = ${username}`, (error, rows, fields) => {
-            // handler func for result of 
-            if(error) {
-                throw error;
-            }
-            console.log("update last logged in has been successfully executed");
-        });
-        myConnection.end()
+        return new Promise<object>((resolve, reject) => {
+            myConnection.connect();
+            myConnection.query(`UPDATE users SET last_login = '${jsDateToMysql(date)}' WHERE username = '${username}'`, (error, rows, fields) => {
+                // handler func for result of 
+                if(error) {
+                    console.log(error);
+                }
+                console.log("update last logged in has been successfully executed");
+                resolve({'succ': true});
+            });
+            myConnection.end()
+        })
     }
-    return {'succ': true};
 }
 
-export async function verifyPassword(hashedPassword: string, password: string) {
+async function verifyPassword(hashedPassword: string, password: string) {
     return await argon2.verify(hashedPassword, password);
 }
 
