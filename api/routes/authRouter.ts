@@ -15,13 +15,13 @@ router.post('/isLoggedIn', (req: any, res: any) => {
 	// check if logged in given a jwt header
 	// for now, lets just -
 
-    const jwtVerify = isAuthed(req.body.Authorization);
-	if(jwtVerify) {
+    const jwtVerify: any = isAuthed(req.body.Authorization);
+	if(Object.keys(jwtVerify).length > 0) {
 		res.status(200);
-		res.json({"isLoggedIn": true});
+		res.json({"isLoggedIn": true, "username": jwtVerify.name});
 	} else {
 		res.status(403);
-		res.json({"isLoggedIn": false});
+		res.json({"isLoggedIn": false, "username": ""});
 	}
 });
 
