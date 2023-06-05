@@ -6,6 +6,7 @@ router.post('/', (req: any, res: any) => {
 	// gets you the items from the database
 	//data = MongoDBClient(process.env.MONGO_URI).collection("items").all();
 	//return data;
+	console.log("returning items....")
 	res.json({"itemList": [
 		{"itemName": "scooter", "description": "", "category": "", inStock: true, "priceRs": 80, "dateAdded": new Date('August 14, 2003'), "image": "https://upload.wikimedia.org/wikipedia/commons/0/05/Kawasaki_ZX-RR_2007TMS.jpg"},
 		{"itemName": "e-bike", "description": "", "category": "", inStock: true, "priceRs": 10, "dateAdded": new Date('August 14, 2003'), "image": "https://upload.wikimedia.org/wikipedia/commons/0/05/Kawasaki_ZX-RR_2007TMS.jpg"},

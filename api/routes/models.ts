@@ -17,7 +17,7 @@ export class User {
 
     public static fromMap(map: any) {
         // returns a user instance
-        return new User(map.username, map.email, map.password, map.lastLogin, map.joinedDt, map.isVendor);
+        return new User( map.username, map.email, map.password, map.is_vendor == 1 ? true : false, map.last_login, map.joined_dt);
     }
 }
 

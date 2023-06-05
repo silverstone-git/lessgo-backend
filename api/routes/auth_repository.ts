@@ -92,7 +92,7 @@ export async function findUser(username: string, passedConnection: Connection | 
 
 export async function loginUser(username: string, enteredPassword: string) {
 
-    return new Promise<number>(async (resolve, reject) => {
+    return new Promise<User | number>(async (resolve, reject) => {
         const connectionForLogIn = await connection(mysqlDBName);
         connectionForLogIn.connect();
         const userInDB: User = await findUser(username, connectionForLogIn);
@@ -102,7 +102,7 @@ export async function loginUser(username: string, enteredPassword: string) {
             if(isVerified) {
                 await updateLastLoggedIn(username, new Date(), connectionForLogIn);
                 connectionForLogIn.end();
-                resolve(1);
+                resolve(userInDB);
             } else {
                 connectionForLogIn.end();
                 resolve(0);

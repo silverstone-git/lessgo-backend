@@ -18,7 +18,7 @@ router.post('/isLoggedIn', (req: any, res: any) => {
     const jwtVerify: any = isAuthed(req.body.Authorization);
 	if(Object.keys(jwtVerify).length > 0) {
 		res.status(200);
-		res.json({"isLoggedIn": true, "username": jwtVerify.name});
+		res.json({"isLoggedIn": true, "username": jwtVerify.name, "isVendor": jwtVerify.isVendor});
 	} else {
 		res.status(403);
 		res.json({"isLoggedIn": false, "username": ""});
@@ -33,8 +33,13 @@ router.post('/login', async (req: any, res: any) => {
     const username = req.body.username;
     // 1 means all good, 0 means wrong password, -1 means user not even found in database
     const toAuthenticateOrNot = await authRepo.loginUser(username, req.body.password);
-    if(toAuthenticateOrNot == 1) {
-            const authorization: string  = jwt.sign({name: username}, jwtSecret);
+    if(toAuthenticateOrNot instanceof User) {
+            console.log("to be signed data -");
+            console.log(`
+            name = ${toAuthenticateOrNot.username},
+            isVendor = ${toAuthenticateOrNot.isVendor},
+            `)
+            const authorization: string  = jwt.sign({name: toAuthenticateOrNot.username, isVendor: toAuthenticateOrNot.isVendor}, jwtSecret);
             res.status(200).json({'Authorization': `Bearer ${authorization}`, 'succ': true})
     } else if(toAuthenticateOrNot == 0) {
             res.status(403).json({'succ': false, 'message': 'wrong_password'});
@@ -49,7 +54,7 @@ router.post('/create', async (req: any, res: any) => {
     const email = req.body.email;
     const vendorReq = req.body.vendorReq === "vendor" ? true : false;
 
-    if(isAuthed(req.body.Authorization)) {
+    if(!(JSON.stringify(isAuthed(req.body.Authorization)) == JSON.stringify({}))) {
         // if the user is authed up already, dont do this creation
 
         res.status(200).json({ "succ": false, "fail": "Already Logged In!"});
@@ -92,6 +97,6 @@ router.post('/create', async (req: any, res: any) => {
 		res.status(400).json({"fail": fail, "succ": false});
         return;
 	}
-}) 
+});
 
 export default router;
