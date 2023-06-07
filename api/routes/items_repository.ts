@@ -1,5 +1,5 @@
 import { Item } from "./models";
-import mysql, { Connection } from 'mysql';
+import mysql from 'mysql';
 
 import { v4 as uuidv4 } from 'uuid';
 
@@ -62,5 +62,34 @@ export async function post(item: Item) {
         });
         myConnection.end();
         resolve(exitCode);
+    })
+}
+
+export async function get() {
+    return new Promise<Array<Item> | number>( async (resolve, reject) => {
+        //
+
+        const itemsArr: Array<Item> = [];
+        const myConnection = await connection(mysqlDBName);
+        myConnection.connect();
+        myConnection.query(`
+        SELECT * FROM items;
+        `, (err, rows, fields) => {
+            //
+            if(err) {
+                console.log(err);
+                resolve(1);
+            }
+            if(rows[0]) {
+                let i: number = 0;
+                for(i = 0; i < rows.length; i ++) {
+                    // rows is nothing but an array of maps
+                    itemsArr.push(Item.fromMap(rows[i]));
+                }
+                resolve(itemsArr);
+            } else {
+                resolve(2);
+            }
+        });
     })
 }

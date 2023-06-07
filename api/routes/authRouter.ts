@@ -16,8 +16,6 @@ router.post('/isLoggedIn', (req: any, res: any) => {
 	// for now, lets just -
 
     const jwtVerify: any = isAuthed(req.body.Authorization);
-    console.log("decoded jwt is: ");
-    console.log(jwtVerify);
 	if(Object.keys(jwtVerify).length > 0) {
 		res.status(200);
 		res.json({"isLoggedIn": true, "username": jwtVerify.name, "isVendor": jwtVerify.isVendor});
