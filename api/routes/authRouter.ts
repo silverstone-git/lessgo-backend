@@ -16,6 +16,8 @@ router.post('/isLoggedIn', (req: any, res: any) => {
 	// for now, lets just -
 
     const jwtVerify: any = isAuthed(req.body.Authorization);
+    console.log("decoded jwt is: ");
+    console.log(jwtVerify);
 	if(Object.keys(jwtVerify).length > 0) {
 		res.status(200);
 		res.json({"isLoggedIn": true, "username": jwtVerify.name, "isVendor": jwtVerify.isVendor});
@@ -34,11 +36,6 @@ router.post('/login', async (req: any, res: any) => {
     // 1 means all good, 0 means wrong password, -1 means user not even found in database
     const toAuthenticateOrNot = await authRepo.loginUser(username, req.body.password);
     if(toAuthenticateOrNot instanceof User) {
-            console.log("to be signed data -");
-            console.log(`
-            name = ${toAuthenticateOrNot.username},
-            isVendor = ${toAuthenticateOrNot.isVendor},
-            `)
             const authorization: string  = jwt.sign({name: toAuthenticateOrNot.username, isVendor: toAuthenticateOrNot.isVendor}, jwtSecret);
             res.status(200).json({'Authorization': `Bearer ${authorization}`, 'succ': true})
     } else if(toAuthenticateOrNot == 0) {

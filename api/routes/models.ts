@@ -17,7 +17,7 @@ export class User {
 
     public static fromMap(map: any) {
         // returns a user instance
-        return new User( map.username, map.email, map.password, map.is_vendor == 1 ? true : false, map.last_login, map.joined_dt);
+        return new User(map.username, map.email, map.password, map.is_vendor === 1 ? true : false, map.last_login, map.joined_dt);
     }
 }
 
@@ -28,6 +28,7 @@ export enum Category {
     veh = "Vehicles",
     mat = "Material Components",
     fmcg = "FMCG Products",
+    other = "Other",
 }
 
 
@@ -38,15 +39,38 @@ export class Item {
     inStock: boolean;
     priceRs: number;
     dateAdded: Date;
+    image: Blob;
     video: Blob;
 
-    public constructor(itemName: string, description: string, category: Category, inStock: boolean, priceRs: number, dateAdded: Date, video: Blob) {
+    public constructor(itemName: string, description: string, category: Category, inStock: boolean, priceRs: number, dateAdded: Date, image: Blob, video: Blob) {
         this.itemName = itemName;
         this.description = description;
         this.category = category;
         this.inStock = inStock;
         this.priceRs = priceRs;
         this.dateAdded = dateAdded;
+        this.image = image;
         this.video = video;
     }
+
+    public static toMap(itemName: string, description: string, category: Category, inStock: boolean, priceRs: number, dateAdded: Date, image: Blob, video: Blob) {
+        // returns a user instance
+        return {
+        "itemName" : itemName,
+        "description" : description,
+        "category" : category,
+        "inStock" : inStock,
+        "priceRs" : priceRs,
+        "dateAdded" : dateAdded,
+        "image" : image,
+        "video" : video,
+        }
+    }
+
+    public static fromMap(map: any) {
+        // returns an item instance from map
+        return new Item(map.itemName, map.description, map.category, map.inStock, map.priceRs, map.dateAdded, map.image, map.video);
+    }
+
+
 }

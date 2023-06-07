@@ -129,7 +129,7 @@ export async function createUser(user: User) {
     '${user.password}',
     ${user.isVendor},
     '${jsDateToMysql(new Date())}'
-    )
+    );
     `,
     (err, rows, fields) => {
         if(err) {
