@@ -69,7 +69,7 @@ export async function get() {
     return new Promise<Array<Item> | number>( async (resolve, reject) => {
         //
 
-        const itemsArr: Array<Item> = [];
+        const itemsArr: Array<any> = [];
         const myConnection = await connection(mysqlDBName);
         myConnection.connect();
         myConnection.query(`
@@ -84,7 +84,7 @@ export async function get() {
                 let i: number = 0;
                 for(i = 0; i < rows.length; i ++) {
                     // rows is nothing but an array of maps
-                    itemsArr.push(Item.fromMap(rows[i]));
+                    itemsArr.push(rows[i] as Object);
                 }
                 resolve(itemsArr);
             } else {

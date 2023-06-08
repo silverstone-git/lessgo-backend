@@ -17,7 +17,7 @@ router.post('/get-items', async (req: any, res: any) => {
 		return;
 	}
 
-	let itemsOrAreThey: Array<Item> | number = await itemsRepo.get();
+	let itemsOrAreThey: Array<any> | number = await itemsRepo.get();
 
 	if(typeof itemsOrAreThey === 'number') {
 		let message: string = "Unhandled Exception";
@@ -33,16 +33,16 @@ router.post('/get-items', async (req: any, res: any) => {
 			"message": message,
 		})
 	} else {
-		let jsonArr: Array<any> = [];
 		let i: number = 0;
+		//
+		// TODO: render the entered image in view instead of this stub loop
+		//
 		for(i = 0; i < itemsOrAreThey.length; i ++) {
-			//
-			jsonArr.push(Item.toMap(itemsOrAreThey[i]));
-			jsonArr[i].image = "https://upload.wikimedia.org/wikipedia/commons/0/05/Kawasaki_ZX-RR_2007TMS.jpg";
+			itemsOrAreThey[i].image = "https://upload.wikimedia.org/wikipedia/commons/0/05/Kawasaki_ZX-RR_2007TMS.jpg";
 		}
 		res.status(200).json({
 			"succ": true,
-			"itemList": jsonArr,
+			"itemList": JSON.stringify(itemsOrAreThey),
 		})
 	}
 
