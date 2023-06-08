@@ -1,6 +1,5 @@
 import * as express from 'express';
 import isAuthed from './authorizer';
-import { Item } from './models';
 import * as itemsRepo from './items_repository';
 
 const router = express.Router();
@@ -84,7 +83,7 @@ router.post('/add-item', async (req: any, res: any) => {
 	}
 });
 
-router.post('/place-order', async (req: any, res: any) => {
+router.post('/add-to-cart', async (req: any, res: any) => {
 	// place an order by authorizing from auth and cart in body
 
 	let jwtVerify: any = isAuthed(req.body["Authorization"]);
@@ -95,8 +94,12 @@ router.post('/place-order', async (req: any, res: any) => {
 
 	// const cart: Map<string, any> = new Map(Object.entries(req.body["cart"]));
 
-	let exitCode = itemsRepo.order(jwtVerify.name, req.body["cart"]);
-	res.status(201).json({"succ": true});
+	let exitCode = await itemsRepo.addToCart(jwtVerify.userId, req.body["cart"]);
+	if(exitCode === 0) {
+		res.status(201).json({"succ": true});
+	} else {
+		res.status(400).json({"succ": false, message: "Unhandled Exception"});
+	}
 })
 
 export default router;

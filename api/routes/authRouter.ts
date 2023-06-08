@@ -34,7 +34,7 @@ router.post('/login', async (req: any, res: any) => {
     // 1 means all good, 0 means wrong password, -1 means user not even found in database
     const toAuthenticateOrNot = await authRepo.loginUser(username, req.body.password);
     if(toAuthenticateOrNot instanceof User) {
-            const authorization: string  = jwt.sign({name: toAuthenticateOrNot.username, isVendor: toAuthenticateOrNot.isVendor}, jwtSecret);
+            const authorization: string  = jwt.sign({name: toAuthenticateOrNot.username, isVendor: toAuthenticateOrNot.isVendor, userId: toAuthenticateOrNot.userId}, jwtSecret);
             res.status(200).json({'Authorization': `Bearer ${authorization}`, 'succ': true})
     } else if(toAuthenticateOrNot == 0) {
             res.status(403).json({'succ': false, 'message': 'Wrong Password'});

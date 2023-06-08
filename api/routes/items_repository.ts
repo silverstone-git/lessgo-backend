@@ -95,9 +95,35 @@ export async function get() {
 }
 
 
-export async function order(username: string, cart: Map<string, any>) {
+export async function addToCart(userId: string, cart: Object) {
     // insert the given username, items and count into the orders table
-    console.log(`inserting username: ${username}, and cart:`);
-    console.log(cart);
-    return 0;
+
+    return new Promise<number>(async (resolve, reject) => {
+        let exitCode = 0;
+        const myConnection = await connection(mysqlDBName);
+        myConnection.connect();
+        console.log("object being posted: ");
+        console.log(cart);
+        for(const [key, value] of Object.entries(cart)) {
+            myConnection.query(`
+            INSERT INTO
+            orders (order_id, user_id, item_id, status, count, cart_at)
+            VALUES (
+                ${encodeUuidToNumber(uuidv4())},
+                ${userId},
+                ${key},
+                2,
+                ${value},
+                '${jsDateToMysql(new Date())}'
+            );
+            `, (err, rows, fields) => {
+                if(err) {
+                    console.log(err);
+                    exitCode = 1;
+                }
+            });
+        }
+        myConnection.end();
+        resolve(exitCode);
+    })
 }
