@@ -36,7 +36,7 @@ router.post('/get-items', async (req: any, res: any) => {
 		let i: number = 0;
 		for(i = 0; i < itemsOrAreThey.length; i ++) {
 			//
-			jsonArr.push(Item.toMap(itemsOrAreThey[i].itemName, itemsOrAreThey[i].description, itemsOrAreThey[i].category, itemsOrAreThey[i].inStock, itemsOrAreThey[i].priceRs, itemsOrAreThey[i].dateAdded, itemsOrAreThey[i].image, itemsOrAreThey[i].video ));
+			jsonArr.push(Item.toMap(itemsOrAreThey[i]));
 			jsonArr[i].image = "https://upload.wikimedia.org/wikipedia/commons/0/05/Kawasaki_ZX-RR_2007TMS.jpg";
 		}
 		res.status(200).json({
@@ -58,7 +58,7 @@ router.post('/add-item', async (req: any, res: any) => {
 		return;
 	}
 
-	let exitCode = await itemsRepo.post(Item.fromMap(req.body["item"]));
+	let exitCode = await itemsRepo.post(req.body["item"]);
 	if(exitCode === 1) {
 		//
 		res.status(400).json({

@@ -53,17 +53,17 @@ export class Item {
         this.video = video;
     }
 
-    public static toMap(itemName: string, description: string, category: Category, inStock: boolean, priceRs: number, dateAdded: Date, image: Blob, video: Blob) {
+    public static toMap(item: Item) {
         // returns a user instance
         return {
-        "itemName" : itemName,
-        "description" : description,
-        "category" : category,
-        "inStock" : inStock,
-        "priceRs" : priceRs,
-        "dateAdded" : dateAdded,
-        "image" : image,
-        "video" : video,
+        "itemName" : item.itemName,
+        "description" : item.description,
+        "category" : item.category,
+        "inStock" : item.inStock,
+        "priceRs" : item.priceRs,
+        "dateAdded" : item.dateAdded,
+        "image" : item.image,
+        "video" : item.video,
         }
     }
 

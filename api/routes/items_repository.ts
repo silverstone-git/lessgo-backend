@@ -34,7 +34,7 @@ function encodeUuidToNumber(myUuid: string) {
 
 
 
-export async function post(item: Item) {
+export async function post(item: any) {
     //add a post
     return new Promise<number>(async (resolve, reject) => {
         let exitCode = 0;
@@ -57,7 +57,7 @@ export async function post(item: Item) {
         `, (err, rows, fields) => {
             if(err) {
                 console.log(err);
-                exitCode = -2;
+                exitCode = 1;
             }
         });
         myConnection.end();
