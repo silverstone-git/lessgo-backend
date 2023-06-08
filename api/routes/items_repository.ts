@@ -93,3 +93,11 @@ export async function get() {
         });
     })
 }
+
+
+export async function order(username: string, cart: Map<string, any>) {
+    // insert the given username, items and count into the orders table
+    console.log(`inserting username: ${username}, and cart:`);
+    console.log(cart);
+    return 0;
+}

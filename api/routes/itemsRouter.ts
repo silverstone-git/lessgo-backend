@@ -5,6 +5,7 @@ import * as itemsRepo from './items_repository';
 
 const router = express.Router();
 
+
 router.post('/get-items', async (req: any, res: any) => {
 	// gets you the items from the database
 	//data = MongoDBClient(process.env.MONGO_URI).collection("items").all();
@@ -12,7 +13,7 @@ router.post('/get-items', async (req: any, res: any) => {
 
 	let jwtVerify = isAuthed(req.body["Authorization"]);
 	if(Object.keys(jwtVerify).length === 0) {
-		res.json({"succ": false, "message": "Forbidden"});
+		res.status(403).json({"succ": false, "message": "Forbidden"});
 		return;
 	}
 
@@ -54,7 +55,7 @@ router.post('/add-item', async (req: any, res: any) => {
 
 	let jwtVerify = isAuthed(req.body["Authorization"]);
 	if(Object.keys(jwtVerify).length === 0) {
-		res.json({"succ": false, "message": "Forbidden"});
+		res.status(403).json({"succ": false, "message": "Forbidden"});
 		return;
 	}
 
@@ -82,5 +83,20 @@ router.post('/add-item', async (req: any, res: any) => {
 		})
 	}
 });
+
+router.post('/place-order', async (req: any, res: any) => {
+	// place an order by authorizing from auth and cart in body
+
+	let jwtVerify: any = isAuthed(req.body["Authorization"]);
+	if(Object.keys(jwtVerify).length === 0) {
+		res.status(403).json({"succ": false, "message": "Forbidden"});
+		return;
+	}
+
+	// const cart: Map<string, any> = new Map(Object.entries(req.body["cart"]));
+
+	let exitCode = itemsRepo.order(jwtVerify.name, req.body["cart"]);
+	res.status(201).json({"succ": true});
+})
 
 export default router;

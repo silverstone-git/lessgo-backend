@@ -37,9 +37,9 @@ router.post('/login', async (req: any, res: any) => {
             const authorization: string  = jwt.sign({name: toAuthenticateOrNot.username, isVendor: toAuthenticateOrNot.isVendor}, jwtSecret);
             res.status(200).json({'Authorization': `Bearer ${authorization}`, 'succ': true})
     } else if(toAuthenticateOrNot == 0) {
-            res.status(403).json({'succ': false, 'message': 'wrong_password'});
+            res.status(403).json({'succ': false, 'message': 'Wrong Password'});
     } else {
-        res.status(404).json({'succ': false, 'message': 'doesnt_exist'});
+        res.status(404).json({'succ': false, 'message': 'The Account with such credentials doesn\'t exist'});
     }
 });
 
