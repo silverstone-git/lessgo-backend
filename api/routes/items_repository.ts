@@ -37,6 +37,17 @@ function encodeUuidToNumber(myUuid: string) {
 export async function post(item: any) {
     //add a post
     return new Promise<number>(async (resolve, reject) => {
+        function buf2hex(buffer: Buffer) { // buffer is an ArrayBuffer
+        return [...new Uint8Array(buffer)]
+            .map(x => x.toString(16).padStart(2, '0'))
+            .join('');
+        }
+        item.image = await item.image.arrayBuffer();
+        // console.log("image buffer is: ");
+        // console.log(item.image);
+        item.image = buf2hex(item.image);
+        // console.log("image hex is: ");
+        // console.log(item.image);
         let exitCode = 0;
         const myConnection = await connection(mysqlDBName);
         myConnection.connect();
@@ -102,8 +113,6 @@ export async function addToCart(userId: string, cart: Object) {
         let exitCode = 0;
         const myConnection = await connection(mysqlDBName);
         myConnection.connect();
-        console.log("object being posted: ");
-        console.log(cart);
         for(const [key, value] of Object.entries(cart)) {
             myConnection.query(`
             INSERT INTO
