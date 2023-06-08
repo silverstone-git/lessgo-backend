@@ -33,14 +33,6 @@ router.post('/get-items', async (req: any, res: any) => {
 		})
 	} else {
 		let i: number = 0;
-		//
-		// TODO: render the entered image in view instead of this stub loop
-		//
-		// for(i = 0; i < itemsOrAreThey.length; i ++) {
-		// 	itemsOrAreThey[i].image = "https://upload.wikimedia.org/wikipedia/commons/0/05/Kawasaki_ZX-RR_2007TMS.jpg";
-		// }
-		console.log("sending back image for 0: ");
-		console.log(itemsOrAreThey[0].image);
 		res.status(200).json({
 			"succ": true,
 			"itemList": JSON.stringify(itemsOrAreThey),
@@ -61,12 +53,10 @@ router.post('/add-item', async (req: any, res: any) => {
 	}
 
 	const receivedItem = req.body["item"];
-	receivedItem.image = new Blob([receivedItem.image], {type: "image/*"});
-	receivedItem.video = new Blob([receivedItem.video], {type: "video/*"});
+	// receivedItem.image = new Blob([receivedItem.image], {type: "image/*"});
+	// receivedItem.video = new Blob([receivedItem.video], {type: "video/*"});
 
-	// console.log("received blob: ");
-	// console.log(receivedItem.image);
-
+	
 	let exitCode = await itemsRepo.post(receivedItem);
 	if(exitCode === 1) {
 		//
