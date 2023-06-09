@@ -1,14 +1,13 @@
 import * as express from 'express';
 import isAuthed from './authorizer';
 import * as itemsRepo from './items_repository';
+import { Item } from './models';
 
 const router = express.Router();
 
 
 router.post('/get-items', async (req: any, res: any) => {
 	// gets you the items from the database
-	//data = MongoDBClient(process.env.MONGO_URI).collection("items").all();
-	//return data;
 
 	let jwtVerify = isAuthed(req.body["Authorization"]);
 	if(Object.keys(jwtVerify).length === 0) {
@@ -52,10 +51,13 @@ router.post('/add-item', async (req: any, res: any) => {
 		return;
 	}
 
-	const receivedItem = req.body["item"];
-	// receivedItem.image = new Blob([receivedItem.image], {type: "image/*"});
-	// receivedItem.video = new Blob([receivedItem.video], {type: "video/*"});
+	let receivedItem = req.body["item"];
 
+	// console.log("received object is: ");
+	// console.log(receivedItem);
+	receivedItem = Item.fromMap(receivedItem);
+	// console.log("item is: ");
+	// console.log(receivedItem);
 	
 	let exitCode = await itemsRepo.post(receivedItem);
 	if(exitCode === 1) {

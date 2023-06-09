@@ -50,6 +50,7 @@
 >    item_id integer not null,
 >    content varchar(3000) not null,
 >    rating float(4, 2),
+>    date_added datetime,
 >    primary key (review_id),
 >    foreign key (user_id) references users(user_id) on update cascade on delete restrict,
 >    foreign key (item_id) references items(item_id) on update cascade on delete cascade
