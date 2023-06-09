@@ -41,10 +41,10 @@ export class Item {
     inStock: boolean;
     priceRs: number;
     dateAdded: Date;
-    image: Blob;
-    video: Blob;
+    image: string;
+    video: string;
 
-    public constructor(itemName: string, description: string, category: Category, inStock: boolean, priceRs: number, dateAdded: Date, image: Blob, video: Blob) {
+    public constructor(itemName: string, description: string, category: Category, inStock: boolean, priceRs: number, dateAdded: Date, image: string, video: string) {
         this.itemName = itemName;
         this.description = description;
         this.category = category;

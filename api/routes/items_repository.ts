@@ -77,7 +77,7 @@ export async function post(item: any) {
 }
 
 export async function get() {
-    return new Promise<Array<Item> | number>( async (resolve, reject) => {
+    return new Promise<Array<any> | number>( async (resolve, reject) => {
         //
 
         const itemsArr: Array<any> = [];
