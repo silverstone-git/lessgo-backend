@@ -84,23 +84,4 @@ router.post('/add-item', async (req: any, res: any) => {
 	}
 });
 
-router.post('/add-to-cart', async (req: any, res: any) => {
-	// place an order by authorizing from auth and cart in body
-
-	let jwtVerify: any = isAuthed(req.body["Authorization"]);
-	if(Object.keys(jwtVerify).length === 0) {
-		res.status(403).json({"succ": false, "message": "Forbidden"});
-		return;
-	}
-
-	// const cart: Map<string, any> = new Map(Object.entries(req.body["cart"]));
-
-	let exitCode = await itemsRepo.addToCart(jwtVerify.userId, req.body["cart"]);
-	if(exitCode === 0) {
-		res.status(201).json({"succ": true});
-	} else {
-		res.status(400).json({"succ": false, message: "Unhandled Exception"});
-	}
-})
-
 export default router;

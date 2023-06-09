@@ -80,6 +80,32 @@ export class Item {
 
 }
 
+export class CartItem extends Item {
+    count: number;
+    cartAt: Date;
+
+    public constructor(itemName: string, description: string, category: Category, inStock: boolean, priceRs: number, dateAdded: Date, image: string, video: string, itemId: number | undefined, count: number, cartAt: Date) {
+        super(itemName, description, category, inStock, priceRs, dateAdded, image, video, itemId);
+        this.count = count;
+        this.cartAt = cartAt;
+
+    }
+
+    public static fromMap(map: any) {
+        // returns an item instance from map
+        return new CartItem(map.item_name, map.description, map.category, map.in_stock === 1 ? true : false, map.price_rs, map.date_added, map.image, map.video, map.item_id, map.count, map.cart_at);
+    }
+
+    public static toMap(cartItem: CartItem) {
+        // returns an order instance
+        return {
+            ...super.toMap(new Item(cartItem.itemName, cartItem.description, cartItem.category, cartItem.inStock, cartItem.priceRs, cartItem.dateAdded, cartItem.image, cartItem.video, cartItem.itemId)),
+            "count": cartItem.count,
+            "date_added": cartItem.dateAdded,
+        }
+    }
+}
+
 export class Order {
     orderId: number;
     userId: number;
