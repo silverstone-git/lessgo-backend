@@ -86,7 +86,7 @@ async function getOrdersFromUserId(myConnection: Connection, userId: number, sta
                 }
                 resolve(cart)
             } else {
-                console.log("no hits for such order");
+                // console.log("no hits for such order");
                 resolve([]);
             }
         });
@@ -123,6 +123,9 @@ export async function getFromCart(userId: number) {
         myConnection.connect();
 
         let cart: Array<any> = await getOrdersFromUserId(myConnection, userId, 2);
+        if(cart.length === 0) {
+            resolve(1);
+        }
 
         // getting item from row[i].item_id and extending the result by row[i].count
         let i = 0;

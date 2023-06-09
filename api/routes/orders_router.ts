@@ -13,18 +13,21 @@ router.post("/cart", async (req, res) => {
         console.log("403");
 		res.status(403).json({"succ": false, "message": "Forbidden"});
 		return;
-	}
+	} else if (jwtVerify.isVendor){
+        res.status(403).json({"succ": false, "message": "Please login as a Customer"});
+    }
 
-    let itemsOrAreThey: number | Array<CartItem> = await ordersRepo.getFromCart(jwtVerify.userId);
+    let itemsOrAreThey: Array<CartItem> | number = await ordersRepo.getFromCart(jwtVerify.userId);
 
-    // 1 => error
-    // 2 => empty result
-    // 3 => error in querying item from item id in order
-    // 4 => no item exists for such item id in order (sorta impossible)
+    // 1 => empty result
 
     if(typeof itemsOrAreThey === 'number') {
         // this is an error code, not a cart item array
-        res.status(400).json({"succ": false, "message": "Some Error Occured while fetching Cart Items"});
+        if(itemsOrAreThey === 1) {
+            res.status(400).json({"succ": false, "message": "Please go to Items tab to add some items"});
+        } else {
+            res.status(400).json({"succ": false, "message": "Some Error Occured while fetching Cart Items"});
+        }
     } else {
         const cartItemObjArr: any[] = [];
         for(var i = 0; i < itemsOrAreThey.length; i ++) {
