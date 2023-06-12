@@ -84,4 +84,31 @@ router.post('/add-item', async (req: any, res: any) => {
 	}
 });
 
+router.post('/listed', async (req: any, res: any) => {
+	// place an order by authorizing from auth and cart in body
+
+	let jwtVerify: any = isAuthed(req.body["Authorization"]);
+	if(Object.keys(jwtVerify).length === 0 || !jwtVerify.isVendor) {
+		res.status(403).json({"succ": false, "message": "Forbidden"});
+		return;
+	}
+
+	// const cart: Map<string, any> = new Map(Object.entries(req.body["cart"]));
+
+	let arrayOfItems:Array<Object> | number = await ordersRepo.getListedItems(jwtVerify.userId);
+	if(typeof arrayOfItems === 'number') {
+		// handle the error codes here
+		if(arrayOfItems === 2) {
+			res.status(404).json({"succ": false});
+		} else if(arrayOfItems === 1) {
+			res.status(500).json({"succ": false, message: "Server Error"});
+		} else {
+			res.status(400).json({"succ": false, message: "Unhandled Exception"});
+		}
+	} else {
+		res.status(201).json({"succ": true, "itemsObjectList": arrayOfItems});
+	}
+})
+
+
 export default router;

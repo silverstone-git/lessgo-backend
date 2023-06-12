@@ -2,7 +2,8 @@
 import mysql, { Connection } from 'mysql';
 
 import { v4 as uuidv4 } from 'uuid';
-import { CartItem } from './models';
+import { CartItem, Item } from './models';
+import * as itemsRepo from './items_repository';
 
 const mysqlUser: string = process.env.MYSQL_USER == undefined ? '' : process.env.MYSQL_USER;
 const mysqlPassword: string = process.env.MYSQL_PASSWORD == undefined ? '' : process.env.MYSQL_PASSWORD;
@@ -65,7 +66,7 @@ export async function addToCart(userId: string, cart: Object) {
 }
 
 
-async function getOrdersFromUserId(myConnection: Connection, userId: number, statusCode: number) {
+async function getOrdersFromUserId(myConnection: Connection, userId: number, statusCode: number, sendItemIdsOnly = false) {
     //
     return new Promise<Array<any>>(async (resolve, reject) => {
         const cart: Array<any> = [];
@@ -82,7 +83,11 @@ async function getOrdersFromUserId(myConnection: Connection, userId: number, sta
                 let i: number = 0;
                 for(i = 0; i < rows.length; i ++) {
                     // rows is nothing but an array of maps
-                    cart.push(rows[i] as Object);
+                    if(sendItemIdsOnly) {
+                        cart.push(Number(rows[i].item_id))
+                    } else {
+                        cart.push(rows[i] as Object);
+                    }
                 }
                 resolve(cart)
             } else {
@@ -92,6 +97,18 @@ async function getOrdersFromUserId(myConnection: Connection, userId: number, sta
         });
     })
 }
+
+/*
+async function getOrdersFromUserIdNewConnection(userId: number, statusCode: number) {
+
+    const myConnection = await connection(mysqlDBName);
+    myConnection.connect();
+    return (await getOrdersFromUserId(myConnection, userId, statusCode));
+    
+}
+*/
+
+
 
 
 async function getCartItemFromId(myConnection: Connection, cartObj: any) {
@@ -137,6 +154,19 @@ export async function getFromCart(userId: number) {
     })
 }
 
+async function resetFkChecks(myConnection: Connection): Promise<void> {
+    return new Promise<void>((resolve) => {
+        myConnection.query('SET foreign_key_checks = 0;');
+        resolve();
+    })
+}
+async function setFkChecks(myConnection: Connection): Promise<void> {
+    return new Promise<void>((resolve) => {
+        myConnection.query('SET foreign_key_checks = 1;');
+        resolve();
+    })
+}
+
 export async function addListedItemToOrder(userId: number, itemId: number) {
     // insert the given username, items and count into the orders table
 
@@ -144,6 +174,8 @@ export async function addListedItemToOrder(userId: number, itemId: number) {
         let exitCode = 0;
         const myConnection = await connection(mysqlDBName);
         myConnection.connect();
+        // reset fk checks because the new item id isnt reflected in just the next query
+        await resetFkChecks(myConnection);
         myConnection.query(`
         INSERT INTO
         orders (order_id, user_id, item_id, status, listed_at)
@@ -160,7 +192,32 @@ export async function addListedItemToOrder(userId: number, itemId: number) {
                 exitCode = 1;
             }
         });
+        // set fk checks because, safety
+        await setFkChecks(myConnection);
         myConnection.end();
         resolve(exitCode);
+    })
+}
+
+export async function getListedItems(userId: number) {
+    return new Promise<Array<Object> | number>( async (resolve, reject) => {
+        const myConnection = await connection(mysqlDBName);
+        myConnection.connect();
+        
+        // getting an array of item ids from orders table
+        const listedItemsIds: Array<number> = await getOrdersFromUserId(myConnection, userId, 0, true);
+        if(listedItemsIds.length == 0) {
+            resolve(2);
+            return;
+        }
+        const itemsObjects: Array<Object> = [];
+
+        for(var i = 0; i < listedItemsIds.length; i ++) {
+            itemsObjects.push(await itemsRepo.getOne(myConnection, listedItemsIds[i], true));
+        }
+
+        myConnection.end();
+        resolve(itemsObjects);
+
     })
 }

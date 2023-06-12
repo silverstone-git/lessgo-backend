@@ -21,7 +21,7 @@ router.post('/isLoggedIn', (req: any, res: any) => {
 		res.json({"isLoggedIn": true, "username": jwtVerify.name, "isVendor": jwtVerify.isVendor});
 	} else {
 		res.status(403);
-		res.json({"isLoggedIn": false, "username": ""});
+		res.json({"isLoggedIn": false, "username": "", "isVendor": false});
 	}
 });
 

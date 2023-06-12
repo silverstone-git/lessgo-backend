@@ -1,5 +1,5 @@
-import { Item } from "./models";
-import mysql from 'mysql';
+import { Category, Item } from "./models";
+import mysql, { Connection } from 'mysql';
 
 import { v4 as uuidv4 } from 'uuid';
 
@@ -92,4 +92,55 @@ export async function get() {
             }
         });
     })
+}
+
+
+
+export async function getOne(myConnection: Connection, itemId: number, returnObj: boolean = false) {
+
+    return new Promise<Item | Object>((resolve, reject) => {
+        myConnection.query(`
+            SELECT * FROM items WHERE item_id = ${itemId};
+            `, (err, rows, fields) => {
+                //
+                if(err) {
+                    console.log(err);
+                    if(returnObj) {
+                        resolve({});
+                    } else {
+                        resolve(new Item('', '', Category.elec, false, 0, new Date(), '', '', undefined));
+                    }
+                }
+                if(rows[0]) {
+                    if(returnObj) {
+                        resolve(rows[0] as Object);
+                    } else {
+                        resolve(Item.fromMap(rows[0]));
+                    }
+                }
+            }
+        );
+    })
+
+}
+
+export async function getOneForce(itemId: number) {
+
+    return new Promise<Item>( async (resolve, reject) => {
+        const myConnection = await connection(mysqlDBName);
+        myConnection.connect();
+        myConnection.query(`
+            SELECT * FROM items WHERE item_id = ${itemId};
+            `, (err, rows, fields) => {
+                //
+                if(err) {
+                    console.log(err);
+                }
+                if(rows[0]) {
+                    resolve(Item.fromMap(rows[0]));
+                }
+            }
+        );
+    })
+
 }
