@@ -15,6 +15,7 @@ router.post("/cart", async (req, res) => {
 		return;
 	} else if (jwtVerify.isVendor){
         res.status(403).json({"succ": false, "message": "Please login as a Customer"});
+		return;
     }
 
     let itemsOrAreThey: Array<CartItem> | number = await ordersRepo.getFromCart(jwtVerify.userId);

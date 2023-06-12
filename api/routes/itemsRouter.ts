@@ -2,6 +2,7 @@ import * as express from 'express';
 import isAuthed from './authorizer';
 import * as itemsRepo from './items_repository';
 import { Item } from './models';
+import * as ordersRepo from './orders_repository';
 
 const router = express.Router();
 
@@ -45,7 +46,7 @@ router.post('/get-items', async (req: any, res: any) => {
 
 router.post('/add-item', async (req: any, res: any) => {
 
-	let jwtVerify = isAuthed(req.body["Authorization"]);
+	let jwtVerify: any = isAuthed(req.body["Authorization"]);
 	if(Object.keys(jwtVerify).length === 0) {
 		res.status(403).json({"succ": false, "message": "Forbidden"});
 		return;
@@ -53,15 +54,11 @@ router.post('/add-item', async (req: any, res: any) => {
 
 	let receivedItem = req.body["item"];
 
-	// console.log("received object is: ");
-	// console.log(receivedItem);
 	receivedItem = Item.fromMap(receivedItem);
-	// console.log("item is: ");
-	// console.log(receivedItem);
-	
+
+	// exit code is the newly created item id if things succeed, 1 or 2 if not
 	let exitCode = await itemsRepo.post(receivedItem);
 	if(exitCode === 1) {
-		//
 		res.status(400).json({
 			"succ": false,
 			"message": "Invalid Input",
@@ -72,15 +69,18 @@ router.post('/add-item', async (req: any, res: any) => {
 			"succ": false,
 			"message": "Network Error",
 		})
-	} else if(exitCode === 0) {
-		res.status(201).json({
-			"succ": true,
-		})
 	} else {
-		res.status(400).json({
-			"succ": false,
-			"message": "Unhandled Exception",
-		})
+		let exitCode2 = await ordersRepo.addListedItemToOrder(jwtVerify.userId, exitCode);
+		if(exitCode2 === 0) {
+			res.status(201).json({
+				"succ": true,
+			})
+		} else {
+			res.status(400).json({
+				"succ": false,
+				"message": "Failed to add item for the seller account",
+			})
+		}
 	}
 });
 

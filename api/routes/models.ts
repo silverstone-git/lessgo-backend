@@ -115,8 +115,9 @@ export class Order {
     cartAt: Date;
     placedAt: Date | undefined;
     receivedAt: Date | undefined;
+    listedAt: Date | undefined;
 
-    public constructor(orderId: number, userId: number, itemId: number, status: number, count: number, cartAt: Date, placedAt: Date | undefined, receivedAt: Date | undefined) {
+    public constructor(orderId: number, userId: number, itemId: number, status: number, count: number, cartAt: Date, placedAt: Date | undefined, receivedAt: Date | undefined, listedAt: Date | undefined) {
         this.orderId = orderId;
         this.userId = userId;
         this.itemId = itemId;
@@ -125,6 +126,7 @@ export class Order {
         this.cartAt = cartAt;
         this.placedAt = placedAt;
         this.receivedAt = receivedAt;
+        this.listedAt = listedAt;
     }
 
     public static toMap(order: Order) {
@@ -137,13 +139,14 @@ export class Order {
             count : order.count,
             cartAt : order.cartAt,
             placedAt : order.placedAt,
-            receivedAt : order.receivedAt
+            receivedAt : order.receivedAt,
+            listedAt : order.listedAt
         }
     }
 
     public static fromMap(map: any) {
         // returns an order instance from map
-        return new Order(map.order_id, map.user_id, map.item_id, map.status, map.count, map.cart_at, map.placed_at, map.received_at);
+        return new Order(map.order_id, map.user_id, map.item_id, map.status, map.count, map.cart_at, map.placed_at, map.received_at, map.listed_at);
     }
 
 }

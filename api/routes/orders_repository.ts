@@ -136,3 +136,31 @@ export async function getFromCart(userId: number) {
         resolve(cartItemsArr);
     })
 }
+
+export async function addListedItemToOrder(userId: number, itemId: number) {
+    // insert the given username, items and count into the orders table
+
+    return new Promise<number>(async (resolve, reject) => {
+        let exitCode = 0;
+        const myConnection = await connection(mysqlDBName);
+        myConnection.connect();
+        myConnection.query(`
+        INSERT INTO
+        orders (order_id, user_id, item_id, status, listed_at)
+        VALUES (
+            ${encodeUuidToNumber(uuidv4())},
+            ${userId},
+            ${itemId},
+            0,
+            '${jsDateToMysql(new Date())}'
+        );
+        `, (err, rows, fields) => {
+            if(err) {
+                console.log(err);
+                exitCode = 1;
+            }
+        });
+        myConnection.end();
+        resolve(exitCode);
+    })
+}

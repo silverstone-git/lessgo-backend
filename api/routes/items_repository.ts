@@ -29,7 +29,7 @@ function encodeUuidToNumber(myUuid: string) {
         numString += myUuid[i].charCodeAt(0).toString();
     }
     numString = numString.substring(0, 9);
-    return numString;
+    return Number(numString);
 }
 
 
@@ -37,14 +37,14 @@ function encodeUuidToNumber(myUuid: string) {
 export async function post(item: Item) {
     //add a post
     return new Promise<number>(async (resolve, reject) => {
-        let exitCode = 0;
+        let exitCode: number = encodeUuidToNumber(uuidv4());
         const myConnection = await connection(mysqlDBName);
         myConnection.connect();
         myConnection.query(`
         INSERT INTO
         items
         VALUES (
-            ${encodeUuidToNumber(uuidv4())},
+            ${exitCode},
             '${item.itemName}',
             '${item.description}',
             '${item.category}',
