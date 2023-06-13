@@ -91,6 +91,7 @@ export async function get() {
                 resolve(2);
             }
         });
+        myConnection.end();
     })
 }
 
@@ -126,7 +127,7 @@ export async function getOne(myConnection: Connection, itemId: number, returnObj
 
 export async function getOneForce(itemId: number) {
 
-    return new Promise<Item>( async (resolve, reject) => {
+    return new Promise<Object | number>( async (resolve, reject) => {
         const myConnection = await connection(mysqlDBName);
         myConnection.connect();
         myConnection.query(`
@@ -135,12 +136,14 @@ export async function getOneForce(itemId: number) {
                 //
                 if(err) {
                     console.log(err);
+                    resolve(1)
                 }
                 if(rows[0]) {
-                    resolve(Item.fromMap(rows[0]));
+                    resolve(rows[0] as Object);
                 }
             }
         );
+        myConnection.end();
     })
 
 }

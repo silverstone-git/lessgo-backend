@@ -7,6 +7,38 @@ import * as ordersRepo from './orders_repository';
 const router = express.Router();
 
 
+router.get('/get-item/:id', async (req: any, res: any) => {
+	// gets you the items from the database
+
+	const passedId = req.params['id'];
+	let itemOrIsIt: any | number = await itemsRepo.getOneForce(passedId);
+
+	if(typeof itemOrIsIt === 'number') {
+		let message: string = "Unhandled Exception";
+		let statusCode:number = 400;
+		if(itemOrIsIt === 1) {
+			message = "An error occured while querying data";
+		} else if(itemOrIsIt === 2) {
+			statusCode = 404;
+			message = "No Items were found";
+		}
+		res.status(statusCode).json({
+			"succ": false,
+			"message": message,
+		})
+	} else {
+		res.status(200).json({
+			"succ": true,
+			"itemObjStr": JSON.stringify(itemOrIsIt),
+		})
+	}
+
+	//
+	// TODO: Dates arent being parsed from MySQL properly to javascript format
+	//
+});
+
+
 router.post('/get-items', async (req: any, res: any) => {
 	// gets you the items from the database
 
