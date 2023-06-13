@@ -62,4 +62,22 @@ router.post('/add-to-cart', async (req: any, res: any) => {
 	}
 })
 
+
+router.post('/delete-from-cart', async (req: any, res: any) => {
+	// place an order by authorizing from auth and cart in body
+
+	let jwtVerify: any = isAuthed(req.body["Authorization"]);
+	if(Object.keys(jwtVerify).length === 0) {
+		res.status(403).json({"succ": false, "message": "Forbidden"});
+		return;
+	}
+
+	let exitCode = await ordersRepo.deleteFromCart(jwtVerify.userId, Number(req.body["id"]));
+	if(exitCode === 0) {
+		res.status(201).json({"succ": true});
+	} else {
+		res.status(400).json({"succ": false, message: "Unhandled Exception"});
+	}
+})
+
 export default router;

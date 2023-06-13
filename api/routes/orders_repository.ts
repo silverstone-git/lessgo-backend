@@ -66,12 +66,36 @@ export async function addToCart(userId: string, cart: Object) {
 }
 
 
+export async function deleteFromCart(userId: string, id: number) {
+    // insert the given username, items and count into the orders table
+
+    return new Promise<number>(async (resolve, reject) => {
+        let exitCode = 0;
+        const myConnection = await connection(mysqlDBName);
+        myConnection.connect();
+        myConnection.query(`
+        DELETE FROM
+        orders
+        WHERE
+        order_id = ${id};
+        `, (err, rows, fields) => {
+            if(err) {
+                console.log(err);
+                exitCode = 1;
+            }
+        });
+        myConnection.end();
+        resolve(exitCode);
+    })
+}
+
+
 async function getOrdersFromUserId(myConnection: Connection, userId: number, statusCode: number, sendItemIdsOnly = false) {
     //
     return new Promise<Array<any>>(async (resolve, reject) => {
         const cart: Array<any> = [];
         myConnection.query(`
-        SELECT item_id, count, cart_at FROM orders WHERE user_id = ${userId} AND status = ${statusCode};
+        SELECT item_id, count, cart_at, order_id FROM orders WHERE user_id = ${userId} AND status = ${statusCode};
         `, (err, rows, fields) => {
             //
             if(err) {
@@ -121,7 +145,13 @@ async function getCartItemFromId(myConnection: Connection, cartObj: any) {
                     console.log(err);
                 }
                 if(rows[0]) {
-                    let cartItemMap = {...rows[0], "count": cartObj.count, "cart_at": cartObj.cart_at};
+                    //
+                    //
+                    // CHANGE THIS LINE IF MODEL CHANGES
+                    //
+                    //
+                    // console.log("order object being passed to getting item from itemid is: ");
+                    let cartItemMap = {...rows[0], "count": cartObj.count, "cart_at": cartObj.cart_at, "order_id": cartObj.order_id};
                     resolve(CartItem.fromMap(cartItemMap));
                 }
             }
