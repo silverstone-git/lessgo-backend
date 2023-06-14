@@ -66,7 +66,7 @@ export async function addToCart(userId: string, cart: Object) {
 }
 
 
-export async function deleteFromCart(userId: string, id: number) {
+export async function deleteFromOrders(userId: string, id: number) {
     // insert the given username, items and count into the orders table
 
     return new Promise<number>(async (resolve, reject) => {
@@ -243,8 +243,12 @@ export async function getListedItems(userId: number) {
         const itemsObjects: Array<Object> = [];
 
         for(var i = 0; i < listedItemsIds.length; i ++) {
-            itemsObjects.push(await itemsRepo.getOne(myConnection, listedItemsIds[i], true));
+            // let itemObj = await itemsRepo.getOne(myConnection, listedOrders[i].item_id, true);
+            // itemObj = {...itemObj, "order_id": listedOrders[i].order_id}
+            let itemObj = await itemsRepo.getOne(myConnection, listedItemsIds[i], true);
+            itemsObjects.push(itemObj);
         }
+
 
         myConnection.end();
         resolve(itemsObjects);

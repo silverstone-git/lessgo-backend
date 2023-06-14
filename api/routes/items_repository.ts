@@ -104,19 +104,20 @@ export async function getOne(myConnection: Connection, itemId: number, returnObj
             SELECT * FROM items WHERE item_id = ${itemId};
             `, (err, rows, fields) => {
                 //
-                if(err) {
-                    console.log(err);
-                    if(returnObj) {
-                        resolve({});
-                    } else {
-                        resolve(new Item('', '', Category.elec, false, 0, new Date(), '', '', undefined));
-                    }
-                }
                 if(rows[0]) {
                     if(returnObj) {
                         resolve(rows[0] as Object);
                     } else {
                         resolve(Item.fromMap(rows[0]));
+                    }
+                }
+                else {
+                    if(err)
+                        console.log(err);
+                    if(returnObj) {
+                        resolve({});
+                    } else {
+                        resolve(new Item('', '', Category.elec, false, 0, new Date(), '', '', undefined));
                     }
                 }
             }
@@ -140,10 +141,33 @@ export async function getOneForce(itemId: number) {
                 }
                 if(rows[0]) {
                     resolve(rows[0] as Object);
+                } else {
+                    resolve(2)
                 }
             }
         );
         myConnection.end();
     })
 
+}
+
+export async function deleteItem(itemId: any) {
+
+    return new Promise<number>( async (resolve, reject) => {
+        const myConnection = await connection(mysqlDBName);
+        myConnection.connect();
+        myConnection.query(`
+            DELETE FROM items WHERE item_id = ${itemId};
+            `, (err, rows, fields) => {
+                //
+                if(err) {
+                    console.log(err);
+                    resolve(1);
+                } else {
+                    resolve(0);
+                }
+            }
+        );
+        myConnection.end();
+    })
 }

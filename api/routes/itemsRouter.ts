@@ -138,7 +138,24 @@ router.post('/listed', async (req: any, res: any) => {
 			res.status(400).json({"succ": false, message: "Unhandled Exception"});
 		}
 	} else {
-		res.status(201).json({"succ": true, "itemsObjectList": arrayOfItems});
+		res.status(201).json({"succ": true, "itemsObjectList": JSON.stringify(arrayOfItems)});
+	}
+})
+
+router.post('/delete-listing', async (req: any, res: any) => {
+	// place an order by authorizing from auth and cart in body
+
+	let jwtVerify: any = isAuthed(req.body["Authorization"]);
+	if(Object.keys(jwtVerify).length === 0 || !jwtVerify.isVendor) {
+		res.status(403).json({"succ": false, "message": "Forbidden"});
+		return;
+	}
+
+	let exitCode = await itemsRepo.deleteItem(req.body["itemId"]);
+	if(exitCode === 0) {
+		res.status(201).json({"succ": true});
+	} else {
+		res.status(400).json({"succ": false, message: "Error occurred while deleting"});
 	}
 })
 

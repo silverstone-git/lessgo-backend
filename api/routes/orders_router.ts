@@ -72,12 +72,13 @@ router.post('/delete-from-cart', async (req: any, res: any) => {
 		return;
 	}
 
-	let exitCode = await ordersRepo.deleteFromCart(jwtVerify.userId, Number(req.body["id"]));
+	let exitCode = await ordersRepo.deleteFromOrders(jwtVerify.userId, Number(req.body["id"]));
 	if(exitCode === 0) {
 		res.status(201).json({"succ": true});
 	} else {
 		res.status(400).json({"succ": false, message: "Unhandled Exception"});
 	}
 })
+
 
 export default router;
