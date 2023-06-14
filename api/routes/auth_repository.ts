@@ -35,7 +35,7 @@ function encodeUuidToNumber(myUuid: string) {
 }
 
 
-export async function findUser(username: string, passedConnection: Connection | boolean = false) {
+export async function findUser(email: string, passedConnection: Connection | boolean = false) {
     // finding the user by username
     let found = false;
 
@@ -47,7 +47,7 @@ export async function findUser(username: string, passedConnection: Connection | 
         // the user's presence in db is needed to be validated
         return new Promise<User>(async (resolve, reject) => {
             // handler
-            passedConnection.query(`SELECT * FROM users WHERE username = '${username}' `, (err, rows, fields) => {
+            passedConnection.query(`SELECT * FROM users WHERE email = '${email}' `, (err, rows, fields) => {
                 // handle the query result
                 if(err) {
                     console.log(err);
@@ -68,7 +68,7 @@ export async function findUser(username: string, passedConnection: Connection | 
         const myConnection = await connection(mysqlDBName);
         return new Promise<User>(async (resolve, reject) => {
             myConnection.connect();
-            myConnection.query(`SELECT * FROM users WHERE username = '${username}' `, async (err, rows, fields) => {
+            myConnection.query(`SELECT * FROM users WHERE email = '${email}' `, async (err, rows, fields) => {
                 // handle the query result
                 if(err) {
                     console.log(err);
@@ -90,17 +90,17 @@ export async function findUser(username: string, passedConnection: Connection | 
 }
 
 
-export async function loginUser(username: string, enteredPassword: string) {
+export async function loginUser(email: string, enteredPassword: string) {
 
     return new Promise<User | number>(async (resolve, reject) => {
         const connectionForLogIn = await connection(mysqlDBName);
         connectionForLogIn.connect();
-        const userInDB: User = await findUser(username, connectionForLogIn);
+        const userInDB: User = await findUser(email, connectionForLogIn);
         if(userInDB.username != "") {
             // the case when user is found in the database
             const isVerified = await verifyPassword(userInDB.password, enteredPassword);
             if(isVerified) {
-                await updateLastLoggedIn(username, new Date(), connectionForLogIn);
+                await updateLastLoggedIn(email, new Date(), connectionForLogIn);
                 connectionForLogIn.end();
                 resolve(userInDB);
             } else {
@@ -143,11 +143,11 @@ export async function createUser(user: User) {
 }
 
 
-export async function updateLastLoggedIn(username: string, date: Date,  passedConnection: Connection | boolean = false) {
+export async function updateLastLoggedIn(email: string, date: Date,  passedConnection: Connection | boolean = false) {
     // parse from string and then put the date back into mysql formatted string
     if(typeof passedConnection != 'boolean') {
         return new Promise<object>((resolve, reject) => {
-            passedConnection.query(`UPDATE users SET last_login = '${jsDateToMysql(date)}' WHERE username = '${username}'`, (error, rows, fields) => {
+            passedConnection.query(`UPDATE users SET last_login = '${jsDateToMysql(date)}' WHERE email = '${email}'`, (error, rows, fields) => {
                 // handler func for result of 
                 if(error) {
                     // console.log(error);
@@ -160,7 +160,7 @@ export async function updateLastLoggedIn(username: string, date: Date,  passedCo
         const myConnection = await connection(mysqlDBName);
         return new Promise<object>((resolve, reject) => {
             myConnection.connect();
-            myConnection.query(`UPDATE users SET last_login = '${jsDateToMysql(date)}' WHERE username = '${username}'`, (error, rows, fields) => {
+            myConnection.query(`UPDATE users SET last_login = '${jsDateToMysql(date)}' WHERE username = '${email}'`, (error, rows, fields) => {
                 // handler func for result of 
                 if(error) {
                     // console.log(error);

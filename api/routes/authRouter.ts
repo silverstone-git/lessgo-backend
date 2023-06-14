@@ -12,16 +12,18 @@ const router = express.Router();
 const jwtSecret: string = process.env.JWT_SECRET == undefined ? '' : process.env.JWT_SECRET;
 
 router.post('/isLoggedIn', (req: any, res: any) => {
-	// check if logged in given a jwt header
-	// for now, lets just -
 
     const jwtVerify: any = isAuthed(req.body.Authorization);
 	if(Object.keys(jwtVerify).length > 0) {
 		res.status(200);
-		res.json({"isLoggedIn": true, "username": jwtVerify.name, "isVendor": jwtVerify.isVendor});
+        if(req.body.sendUsername) {
+		    res.json({"isLoggedIn": true, "username": jwtVerify.name, "isVendor": jwtVerify.isVendor});
+        } else {
+		    res.json({"isLoggedIn": true, "email": jwtVerify.email, "isVendor": jwtVerify.isVendor});
+        }
 	} else {
 		res.status(403);
-		res.json({"isLoggedIn": false, "username": "", "isVendor": false});
+		res.json({"isLoggedIn": false, "email": "", "isVendor": false});
 	}
 });
 
@@ -30,9 +32,9 @@ router.post('/login', async (req: any, res: any) => {
 
     // take credentials from body
     // give back the jwt or a 403 with succ: false
-    const username = req.body.username;
+    const email = req.body.email;
     // 1 means all good, 0 means wrong password, -1 means user not even found in database
-    const toAuthenticateOrNot = await authRepo.loginUser(username, req.body.password);
+    const toAuthenticateOrNot = await authRepo.loginUser(email, req.body.password);
     if(toAuthenticateOrNot instanceof User) {
             const authorization: string  = jwt.sign({name: toAuthenticateOrNot.username, isVendor: toAuthenticateOrNot.isVendor, userId: toAuthenticateOrNot.userId}, jwtSecret);
             res.status(200).json({'Authorization': `Bearer ${authorization}`, 'succ': true})
@@ -57,7 +59,7 @@ router.post('/create', async (req: any, res: any) => {
     }
     
     const validCheckRes: Array<number> = await checkValid(req.body);
-    if(JSON.stringify(validCheckRes) == JSON.stringify([1,1,1])) {
+    if(JSON.stringify(validCheckRes) == JSON.stringify([1,1,1,1])) {
         // sign the user up	
         // make the validArray[0] = -2 if connection error
         const hashedPassword = await authRepo.hashedPassword(req.body.password);
@@ -76,15 +78,17 @@ router.post('/create', async (req: any, res: any) => {
 		if(validCheckRes[0] == 0) {
 			fail = "Username too short";
 		} else if(validCheckRes[0] == -1) {
-			fail = "Please Enter Alphanumeric Username";
+			fail = "Invalid Name";
 		} else if(validCheckRes[0] == -2) {
-			fail = "Username Already Taken!";
+			fail = "User with this email already exists";
 		} else if(validCheckRes[0] == -3) {
 			fail = "Connection Error";
 		}else if(validCheckRes[1] == 0){
 			fail = "Invalid email";
 		} else if(validCheckRes[2] == 0){
 			fail = "Password too short!";
+		} else if(validCheckRes[3] == 0){
+			fail = "Passwords don't match";
 		}else {
 			fail = "Unhandled error while creating the account";
 		}

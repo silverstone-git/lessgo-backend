@@ -11,26 +11,18 @@ const checkValid = async (body: any) =>  {
     let i: number;
 
 
-	// alphanumeric check
-	let notAlphaNumeric = false;
-	let curCode;
-	for(i = 0; i < body.username.length; i ++) {
-		curCode = body.username.charCodeAt(i);
-		if( (curCode < 40) || (curCode > 57 && curCode < 65) || (curCode > 90 && curCode < 97) || (curCode > 122) ) {
-			notAlphaNumeric = true;
-		}
-	}
+	let usernameIsAlphabetsAndSpaces = /^[a-zA-Z\s]*$/.test(body.username);
 
 
 	let newUser = 1;
     // 0th index indicates whether username is right or not
-	if(body.username.length < 4) {
+	if(body.username.length < 3) {
         validArray.push(0);
-    } else if(notAlphaNumeric) {
+    } else if(!usernameIsAlphabetsAndSpaces) {
 		validArray.push(-1);
 	} else {
 		// if username is alpha numeric and length is big enough, proceed to check if username already exists
-        const found = await authRepo.findUser(body.username);
+        const found = await authRepo.findUser(body.email);
         if(found.username != "") {
             // case when username already exists
             newUser = -2;
@@ -50,7 +42,8 @@ const checkValid = async (body: any) =>  {
     // 2nd index indicates whether password is short or not
 	body.password.length < 8 ? validArray.push(0) : validArray.push(1);
 
-	// console.log(`Valid array in validation ts is: ${validArray}`);
+	// 3rd index indicates whether password and confirm password are equal or not
+	body.password === body.password2 ? validArray.push(1) : validArray.push(0);
 
 	return validArray;
 
