@@ -171,3 +171,22 @@ export async function deleteItem(itemId: any) {
         myConnection.end();
     })
 }
+
+export function carouselByCategory(category: string) {
+    return new Promise<Array<Object>>(async (resolve, reject) => {
+        let categories = Category;
+        let storedCategory: keyof typeof categories;
+        function handleErr(err: any) {
+            console.log(err);
+            resolve([]);
+        }
+        for(storedCategory in categories) {
+            if(category === storedCategory) {
+                const myConnection = await connection(mysqlDBName);
+                myConnection.connect();
+                myConnection.query(`SELECT image, item_name, item_id FROM items WHERE category = '${categories[storedCategory]}' LIMIT 5; `, (err,rows) => err? handleErr(err): resolve(rows));
+                myConnection.end();
+            }
+        }
+    })
+}
