@@ -67,7 +67,6 @@ export async function post(item: Item) {
 
 export async function get() {
     return new Promise<Array<any> | number>( async (resolve, reject) => {
-        //
 
         const itemsArr: Array<any> = [];
         const myConnection = await connection(mysqlDBName);

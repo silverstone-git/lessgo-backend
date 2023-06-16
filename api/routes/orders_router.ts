@@ -52,11 +52,20 @@ router.post('/add-to-cart', async (req: any, res: any) => {
 		return;
 	}
 
-	// const cart: Map<string, any> = new Map(Object.entries(req.body["cart"]));
+	// 1 -> insertion error
+	// 2 -> updation error
+	// 3 -> unhandled
+	let exitCode = 3;
+	if(req.body["cart"]) {
+		exitCode = await ordersRepo.addToCart(jwtVerify.userId, req.body["cart"]);
+	}
 
-	let exitCode = await ordersRepo.addToCart(jwtVerify.userId, req.body["cart"]);
 	if(exitCode === 0) {
 		res.status(201).json({"succ": true});
+	} else if(exitCode === 1) {
+		res.status(201).json({"succ": false, message: "Error in adding to cart"});
+	} else if(exitCode === 2) {
+		res.status(201).json({"succ": false, message: "Error in updating the cart"});
 	} else {
 		res.status(400).json({"succ": false, message: "Unhandled Exception"});
 	}

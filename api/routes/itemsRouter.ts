@@ -10,8 +10,12 @@ const router = express.Router();
 router.get('/get-item/:id', async (req: any, res: any) => {
 	// gets you the items from the database
 
-	const passedId = req.params['id'];
-	let itemOrIsIt: any | number = await itemsRepo.getOneForce(passedId);
+	let passedId = req.params['id'];
+	let itemOrIsIt: any | number = 1;
+	passedId = Number(passedId);
+	if(!Number.isNaN(passedId)) {
+		itemOrIsIt = await itemsRepo.getOneForce(passedId);
+	}
 
 	if(typeof itemOrIsIt === 'number') {
 		let message: string = "Unhandled Exception";
@@ -20,7 +24,7 @@ router.get('/get-item/:id', async (req: any, res: any) => {
 			message = "An error occured while querying data";
 		} else if(itemOrIsIt === 2) {
 			statusCode = 404;
-			message = "No Items were found";
+			message = "No such item was found";
 		}
 		res.status(statusCode).json({
 			"succ": false,

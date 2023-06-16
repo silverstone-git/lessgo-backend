@@ -33,32 +33,78 @@ function encodeUuidToNumber(myUuid: string) {
     return numString;
 }
 
+function existsInCart(userId: string, itemId: string, myConnection: Connection) {
+    return new Promise<boolean>((resolve, reject) => {
+        myConnection.query(`SELECT COUNT(order_id) AS cart_occurences FROM orders WHERE item_id = ${itemId} and user_id = ${userId} and status = 2`, (err, rows, fields) => {
+            if(err) {
+                console.log(err);
+                resolve(false);
+            } else {
+                if(rows[0].cart_occurences != 0) {
+                    resolve(true);
+                } else {
+                    resolve(false);
+                }
+            }
+        });
+    });
+}
+
+function insertIntoCart(userId: string, itemId: string, count: number, myConnection: Connection) {
+    return new Promise<number>((resolve, reject) => {
+        myConnection.query(`
+        INSERT INTO
+        orders (order_id, user_id, item_id, status, count, cart_at)
+        VALUES (
+            ${encodeUuidToNumber(uuidv4())},
+            ${userId},
+            ${itemId},
+            2,
+            ${count},
+            '${jsDateToMysql(new Date())}'
+        );
+        `, (err, rows, fields) => {
+            if(err) {
+                console.log(err);
+                resolve(1);
+            } else {
+                resolve(0);
+            }
+        });
+    })
+}
+
+function updateCartCount(userId: string, itemId: string, count: number, myConnection: Connection) {
+    return new Promise<number>((resolve, reject) => {
+        myConnection.query(`
+        UPDATE orders SET count = count + ${count} where user_id = ${userId} and item_id = ${itemId} and status = 2;
+        `, (err, rows, fields) => {
+            if(err) {
+                console.log(err);
+                resolve(2);
+            } else {
+                resolve(0);
+            }
+        });
+    })
+}
+
 
 export async function addToCart(userId: string, cart: Object) {
     // insert the given username, items and count into the orders table
 
     return new Promise<number>(async (resolve, reject) => {
-        let exitCode = 0;
+        let exitCode = 3;
         const myConnection = await connection(mysqlDBName);
         myConnection.connect();
-        for(const [key, value] of Object.entries(cart)) {
-            myConnection.query(`
-            INSERT INTO
-            orders (order_id, user_id, item_id, status, count, cart_at)
-            VALUES (
-                ${encodeUuidToNumber(uuidv4())},
-                ${userId},
-                ${key},
-                2,
-                ${value},
-                '${jsDateToMysql(new Date())}'
-            );
-            `, (err, rows, fields) => {
-                if(err) {
-                    console.log(err);
-                    exitCode = 1;
-                }
-            });
+        for(const [itemId, count] of Object.entries(cart)) {
+            // get the id from cart entry, check table for existing cart item,
+            // if exists, increment count, else, add new row
+            if(await existsInCart(userId, itemId, myConnection)) {
+                exitCode = await updateCartCount(userId, itemId, count, myConnection);
+            } else {
+                exitCode = await insertIntoCart(userId, itemId, count, myConnection);
+            }
         }
         myConnection.end();
         resolve(exitCode);
