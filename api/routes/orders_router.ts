@@ -89,5 +89,17 @@ router.post('/delete-from-cart', async (req: any, res: any) => {
 	}
 })
 
+router.get('/checkif-id-carted', async (req: any, res: any) => {
+
+	let jwtVerify: any = isAuthed(req.header("authorization"));
+	if(Object.keys(jwtVerify).length === 0) {
+		res.status(403).json({"succ": false, "message": "Forbidden"});
+		return;
+	}
+
+
+	const result = await ordersRepo.existsInCartForce(jwtVerify.userId, req.header('itemid'))
+	res.json(JSON.stringify({result: result}));
+})
 
 export default router;

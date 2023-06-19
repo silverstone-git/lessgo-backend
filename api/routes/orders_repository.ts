@@ -33,7 +33,7 @@ function encodeUuidToNumber(myUuid: string) {
     return numString;
 }
 
-function existsInCart(userId: string, itemId: string, myConnection: Connection) {
+async function existsInCart(userId: string, itemId: string, myConnection: Connection) {
     return new Promise<boolean>((resolve, reject) => {
         myConnection.query(`SELECT COUNT(order_id) AS cart_occurences FROM orders WHERE item_id = ${itemId} and user_id = ${userId} and status = 2`, (err, rows, fields) => {
             if(err) {
@@ -47,6 +47,15 @@ function existsInCart(userId: string, itemId: string, myConnection: Connection) 
                 }
             }
         });
+    });
+}
+
+
+export async function existsInCartForce(userId: string, itemId: string) {
+    return new Promise<boolean>(async (resolve, reject) => {
+        const myConnection = await connection(mysqlDBName);
+        myConnection.connect();
+        resolve(await existsInCart(userId, itemId, myConnection));
     });
 }
 
@@ -168,18 +177,6 @@ async function getOrdersFromUserId(myConnection: Connection, userId: number, sta
     })
 }
 
-/*
-async function getOrdersFromUserIdNewConnection(userId: number, statusCode: number) {
-
-    const myConnection = await connection(mysqlDBName);
-    myConnection.connect();
-    return (await getOrdersFromUserId(myConnection, userId, statusCode));
-    
-}
-*/
-
-
-
 
 async function getCartItemFromId(myConnection: Connection, cartObj: any) {
     return new Promise<CartItem>((resolve, reject) => {
@@ -196,7 +193,6 @@ async function getCartItemFromId(myConnection: Connection, cartObj: any) {
                     // CHANGE THIS LINE IF MODEL CHANGES
                     //
                     //
-                    // console.log("order object being passed to getting item from itemid is: ");
                     let cartItemMap = {...rows[0], "count": cartObj.count, "cart_at": cartObj.cart_at, "order_id": cartObj.order_id};
                     resolve(CartItem.fromMap(cartItemMap));
                 }
