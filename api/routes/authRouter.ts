@@ -98,4 +98,20 @@ router.post('/create', async (req: any, res: any) => {
 	}
 });
 
+router.get("/getaddress", async (req: any, res: any) => {
+	let jwtVerify: any = isAuthed(req.header("authorization"));
+	if(Object.keys(jwtVerify).length === 0) {
+		res.status(403).json({"succ": false, "message": "Forbidden"});
+		return;
+	}
+
+    const exitString = await authRepo.getUserAddress(jwtVerify.userId);
+    if(exitString === '') {
+        res.json({succ: false, address: ""});
+    } else {
+        res.json({succ: true, address: exitString});
+    }
+
+})
+
 export default router;

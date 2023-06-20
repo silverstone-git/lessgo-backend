@@ -180,3 +180,22 @@ async function verifyPassword(hashedPassword: string, password: string) {
 export async function hashedPassword(password: string) {
     return await argon2.hash(password);
 }
+
+export async function getUserAddress(userId: number) {
+    return new Promise<string>(async (res, rej) => {
+        const myConnection = await connection(mysqlDBName);
+        myConnection.connect();
+        myConnection.query(`SELECT address FROM users WHERE user_id = '${userId}' `, async (err, rows, fields) => {
+            if(err) {
+                console.log(err);
+                res('');
+            } else {
+                if(rows[0]) {
+                    res(rows[0].address ? rows[0].address : '');
+                } else {
+                    res('');
+                }
+            }
+        })
+    })
+}

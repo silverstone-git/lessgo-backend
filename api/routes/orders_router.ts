@@ -2,6 +2,7 @@ import * as express from 'express';
 import isAuthed from './authorizer';
 import * as ordersRepo from './orders_repository';
 import { CartItem } from './models';
+import * as authRepo from './auth_repository';
 const router = express.Router();
 
 router.post("/cart", async (req, res) => {
@@ -100,6 +101,26 @@ router.get('/checkif-id-carted', async (req: any, res: any) => {
 
 	const result = await ordersRepo.existsInCartForce(jwtVerify.userId, req.header('itemid'))
 	res.json(JSON.stringify({result: result}));
+})
+
+
+router.post('/place', async (req: any, res: any) => {
+	let jwtVerify: any = isAuthed(req.body["Authorization"]);
+	if(Object.keys(jwtVerify).length === 0) {
+		res.status(403).json({"succ": false, "message": "Forbidden"});
+		return;
+	}
+
+	let receivedAddress =  req.body["address"];
+	const isAddressEmpty =  !req.body["address"] || receivedAddress	=== 'undefined';
+	if(isAddressEmpty) {
+		receivedAddress = await authRepo.getUserAddress(jwtVerify.itemId);
+	}
+
+	// get user saved address if not entered new in place order form
+	const exitCode = await ordersRepo.placeOrder(jwtVerify.userId, receivedAddress);
+
+	res.json({succ: exitCode === 1 ? false : true});
 })
 
 export default router;

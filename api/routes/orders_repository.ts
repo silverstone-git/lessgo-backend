@@ -2,7 +2,7 @@
 import mysql, { Connection } from 'mysql';
 
 import { v4 as uuidv4 } from 'uuid';
-import { CartItem, Item } from './models';
+import { CartItem } from './models';
 import * as itemsRepo from './items_repository';
 
 const mysqlUser: string = process.env.MYSQL_USER == undefined ? '' : process.env.MYSQL_USER;
@@ -295,5 +295,22 @@ export async function getListedItems(userId: number) {
         myConnection.end();
         resolve(itemsObjects);
 
+    })
+}
+
+
+export async function placeOrder(userId: number, address: string) {
+    return new Promise<number>(async (res, rej) => {
+        const myConnection = await connection(mysqlDBName);
+        myConnection.connect();
+        myConnection.query(`UPDATE orders SET status = 3, address = '${address}', placed_at = '${jsDateToMysql(new Date())}' WHERE user_id = ${userId} and status = 2`, (err, rows, fields) => {
+            if(err) {
+                console.log(err);
+                res(1);
+            } else {
+                res(0);
+            }
+        });
+        myConnection.end();
     })
 }

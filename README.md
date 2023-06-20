@@ -1,8 +1,18 @@
 # MySQL setup
 - make your mysql account on your server and remember the username and password
 - put the credentials in MYSQL_USER and MYSQL_PASSWORD environment variables resp.
+
+
+- Make sure you are using mysql_native_password auth mode. If not, do it by logging in as root and-
+> alter user 'YOUR_USERNAME_HERE' identified with mysql_native_password by 'YOUR_PASSWORD_HERE';
+
+
 > create database lessgo;
 > use lessgo;
+
+
+## Users Table
+
 > create table users (
 >    user_id integer not null,
 >    username varchar(200) not null,
@@ -14,6 +24,8 @@
 >    primary key(user_id)
 >)
 > engine = INNODB;
+
+## Items Table
 
 > create table items (
 >    item_id integer not null,
@@ -29,20 +41,25 @@
 >)
 > engine = INNODB;
 
+## Orders Table
+
 > create table orders (
 >    order_id integer not null auto_increment,
 >    user_id integer not null,
 >    item_id integer not null,
 >    status tinyint(4),
->    count smallint,
+>    count smallint unsigned,
 >    cart_at datetime,
 >    placed_at datetime,
 >    received_at datetime,
+>    listed_at datetime
 >    primary key (order_id),
 >    foreign key (user_id) references users(user_id) on update cascade on delete cascade,
 >    foreign key (item_id) references items(item_id) on update cascade on delete restrict
 >)
 > engine = INNODB;
+
+## Reviews Table
 
 > create table reviews (
 >    review_id integer not null auto_increment,
@@ -57,11 +74,13 @@
 >)
 > engine = INNODB;
 
-- Convert your password to mysql.js supported auth mode by logging in as root and-
-> alter user 'YOUR_USERNAME_HERE' identified with mysql_native_password by 'YOUR_PASSWORD_HERE';
 
-# Backend Server
-- Create a random JWT secret for your server and put it in the environment variable JWT_SECRET
-- run in the root folder-
+# Environment Variables
+- MYSQL_USERNAME
+- MYSQL_PASSWORD
+- MYSQL_DBNAME
+- JWT_SECRET
+
+# Running Dev Server
 > npm install
 > npm run start
