@@ -14,7 +14,15 @@ router.get('/get-item/:id', async (req: any, res: any) => {
 	let itemOrIsIt: any | number = 1;
 	passedId = Number(passedId);
 	if(!Number.isNaN(passedId)) {
+		// also, check if jwtToken is passed to this function and count++ the hits in item if verified
+
+		const authHeader = req.header('authorization');
+		let jwtVerify: any = isAuthed(authHeader);
+		if(Object.keys(jwtVerify).length > 0) {
+			await itemsRepo.incrementHitInItem(passedId);
+		}
 		itemOrIsIt = await itemsRepo.getOneForce(passedId);
+
 	}
 
 	if(typeof itemOrIsIt === 'number') {

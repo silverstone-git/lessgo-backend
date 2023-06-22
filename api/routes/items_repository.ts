@@ -189,3 +189,19 @@ export function carouselByCategory(category: string) {
         }
     })
 }
+
+export async function incrementHitInItem(passedItem: string) {
+    return new Promise<number>(async (res, rej) =>{
+        const myConnection = await connection(mysqlDBName);
+        myConnection.connect();
+        myConnection.query(`UPDATE items SET hits = hits + 1 WHERE item_id = ${passedItem};`, (err, rows, fields) => {
+            if(err) {
+                console.log(err);
+                res(1);
+            } else {
+                res(0);
+            }
+        });
+        myConnection.end();
+    })
+}
