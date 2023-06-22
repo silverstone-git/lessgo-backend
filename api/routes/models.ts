@@ -124,6 +124,14 @@ export class CartItem extends Item {
             "order_id": cartItem.orderId,
         }
     }
+
+    public static toMaps(cartItems: Array<CartItem>): Array<any> {
+        const maps: Array<any> = [];
+        for(var i = 0; i < cartItems.length; i ++) {
+            maps.push(this.toMap(cartItems[i]));
+        }
+        return maps;
+    }
 }
 
 export class Order {

@@ -98,7 +98,6 @@ router.get('/checkif-id-carted', async (req: any, res: any) => {
 		return;
 	}
 
-
 	const result = await ordersRepo.existsInCartForce(jwtVerify.userId, req.header('itemid'))
 	res.json(JSON.stringify({result: result}));
 })
@@ -121,6 +120,20 @@ router.post('/place', async (req: any, res: any) => {
 	const exitCode = await ordersRepo.placeOrder(jwtVerify.userId, receivedAddress);
 
 	res.json({succ: exitCode === 1 ? false : true});
+})
+
+
+router.get('/your-orders', async (req, res) => {
+	let jwtVerify: any = isAuthed(req.header("authorization"));
+	if(Object.keys(jwtVerify).length === 0) {
+		res.status(403).json({"succ": false, "message": "Forbidden"});
+		return;
+	}
+
+	const result: Array<CartItem> = await ordersRepo.getOrders(jwtVerify.userId);
+
+	res.status(200).json({succ: result.length > 0 ? true : false, orders: JSON.stringify(CartItem.toMaps(result))});
+
 })
 
 export default router;

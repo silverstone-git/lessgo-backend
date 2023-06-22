@@ -285,8 +285,6 @@ export async function getListedItems(userId: number) {
         const itemsObjects: Array<Object> = [];
 
         for(var i = 0; i < listedItemsIds.length; i ++) {
-            // let itemObj = await itemsRepo.getOne(myConnection, listedOrders[i].item_id, true);
-            // itemObj = {...itemObj, "order_id": listedOrders[i].order_id}
             let itemObj = await itemsRepo.getOne(myConnection, listedItemsIds[i], true);
             itemsObjects.push(itemObj);
         }
@@ -311,6 +309,29 @@ export async function placeOrder(userId: number, address: string) {
                 res(0);
             }
         });
+        myConnection.end();
+    })
+}
+
+export function getOrders(userId: number) {
+    // returns a promise of array of cart items
+    return new Promise<Array<CartItem>>(async (res, rej) => {
+        const myConnection = await connection(mysqlDBName);
+        myConnection.connect();
+        const cartItemsArr: Array<CartItem> = [];
+        let cart: Array<any> = await getOrdersFromUserId(myConnection, userId, 3);
+        if(cart.length === 0) {
+            res([]);
+            myConnection.end();
+            return;
+        }
+
+        // getting item from row[i].item_id and extending the result by row[i].count
+        let i = 0;
+        for(i = 0; i < cart.length; i ++) {
+            cartItemsArr.push(await getCartItemFromId(myConnection, cart[i]));
+        }
+        res(cartItemsArr);
         myConnection.end();
     })
 }
