@@ -1,9 +1,9 @@
 import * as express from 'express';
-import * as authRepo from './auth_repository';
+import * as authRepo from '../repositories/auth_repository';
 import jwt from 'jsonwebtoken';
-import checkValid from './validation';
-import isAuthed from './authorizer';
-import { User } from './models';
+import checkValid from '../repositories/validation';
+import isAuthed from '../repositories/authorizer';
+import { User } from '../models/models';
 
 import 'dotenv/config';
 

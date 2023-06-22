@@ -2,7 +2,7 @@
 import mysql, { Connection } from 'mysql';
 
 import { v4 as uuidv4 } from 'uuid';
-import { CartItem } from './models';
+import { CartItem } from '../models/models';
 import * as itemsRepo from './items_repository';
 
 const mysqlUser: string = process.env.MYSQL_USER == undefined ? '' : process.env.MYSQL_USER;
@@ -35,7 +35,7 @@ function encodeUuidToNumber(myUuid: string) {
 
 async function existsInCart(userId: string, itemId: string, myConnection: Connection) {
     return new Promise<boolean>((resolve, reject) => {
-        myConnection.query(`SELECT COUNT(order_id) AS cart_occurences FROM orders WHERE item_id = ${itemId} and user_id = ${userId} and status = 2`, (err, rows, fields) => {
+        myConnection.query(`SELECT COUNT(order_id) AS cart_occurences FROM orders WHERE item_id = ${itemId} and user_id = ${userId} and status = 2;`, (err, rows, fields) => {
             if(err) {
                 console.log(err);
                 resolve(false);

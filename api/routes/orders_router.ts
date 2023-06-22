@@ -1,8 +1,8 @@
 import * as express from 'express';
-import isAuthed from './authorizer';
-import * as ordersRepo from './orders_repository';
-import { CartItem } from './models';
-import * as authRepo from './auth_repository';
+import isAuthed from '../repositories/authorizer';
+import * as ordersRepo from '../repositories/orders_repository';
+import { CartItem } from '../models/models';
+import * as authRepo from '../repositories/auth_repository';
 const router = express.Router();
 
 router.post("/cart", async (req, res) => {

@@ -1,8 +1,8 @@
 import * as express from 'express';
-import isAuthed from './authorizer';
-import * as itemsRepo from './items_repository';
-import { Item } from './models';
-import * as ordersRepo from './orders_repository';
+import isAuthed from '../repositories/authorizer';
+import * as itemsRepo from '../repositories/items_repository';
+import { Item } from '../models/models';
+import * as ordersRepo from '../repositories/orders_repository';
 
 const router = express.Router();
 

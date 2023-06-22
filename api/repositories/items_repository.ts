@@ -1,4 +1,4 @@
-import { Category, Item } from "./models";
+import { Category, Item } from "../models/models";
 import mysql, { Connection } from 'mysql';
 
 import { v4 as uuidv4 } from 'uuid';

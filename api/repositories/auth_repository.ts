@@ -1,5 +1,5 @@
 
-import { User } from './models';
+import { User } from '../models/models';
 import argon2 from 'argon2';
 import mysql, { Connection } from 'mysql';
 import 'dotenv/config';
