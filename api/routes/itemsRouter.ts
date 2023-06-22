@@ -150,7 +150,7 @@ router.post('/listed', async (req: any, res: any) => {
 			res.status(400).json({"succ": false, message: "Unhandled Exception"});
 		}
 	} else {
-		res.status(201).json({"succ": true, "itemsObjectList": JSON.stringify(arrayOfItems)});
+		res.status(200).json({"succ": true, "itemsObjectList": JSON.stringify(arrayOfItems)});
 	}
 })
 
@@ -193,5 +193,18 @@ router.post('/category', async (req: any, res: any) => {
 	}
 })
 
+router.get('/get-hot-items', async (req, res) => {
+	const result: Array<any> = await itemsRepo.getHotItems();
+	if(result.length > 0) {
+		const arrayOfArraysOfProps : Array<Array<string>> = [];
+		result.forEach((val) => {
+			arrayOfArraysOfProps.push([val.image, val.item_name, val.item_id.toString()]);
+		})
+		// console.log("result after mappings -> ", arrayOfArraysOfProps);
+		res.status(200).json({"succ": true, "carouselArray": JSON.stringify(arrayOfArraysOfProps)});
+	} else {
+		res.status(403).json({"succ": false, "carouselArray": JSON.stringify([])});
+	}
+})
 
 export default router;

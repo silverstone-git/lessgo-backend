@@ -205,3 +205,16 @@ export async function incrementHitInItem(passedItem: string) {
         myConnection.end();
     })
 }
+
+export async function getHotItems() {
+    return new Promise<Array<Object>>(async (res, rej) => {
+        const myConnection = await connection(mysqlDBName);
+        function handleErr(err: any) {
+            console.log(err);
+            res([]);
+        }
+        myConnection.connect();
+        myConnection.query(`SELECT image, item_name, item_id FROM items ORDER BY hits DESC LIMIT 5; `, (err,rows) => err? handleErr(err): res(rows));
+        myConnection.end();
+    })
+}
