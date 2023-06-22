@@ -136,4 +136,29 @@ router.get('/your-orders', async (req, res) => {
 
 })
 
+router.get('/is-ordered', async (req: any, res: any) => {
+	let jwtVerify: any = isAuthed(req.header("authorization"));
+	if(Object.keys(jwtVerify).length === 0) {
+		res.status(403).json({"succ": false, "message": "Forbidden"});
+		return;
+	}
+
+	const itemId = req.header('item_id');
+	let result: boolean | Error;
+	let succ = false;
+	if(itemId) {
+		result = await ordersRepo.isOrdered(itemId, jwtVerify.userId);
+		if((typeof result).search('ool') !== -1) {
+			succ = true;
+		} else {
+			console.log(result);
+			result = false;
+		}
+	} else {
+		result = false;
+	}
+
+	res.status(succ ? 200 : 400).json({succ: succ, result: result});
+})
+
 export default router;

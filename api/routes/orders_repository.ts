@@ -335,3 +335,18 @@ export function getOrders(userId: number) {
         myConnection.end();
     })
 }
+
+
+export async function isOrdered(itemId: string, userId: number) {
+    return new Promise<boolean | Error>(async (res, rej) => {
+        const myConnection = await connection(mysqlDBName);
+        function handleErr(err: any) {
+            console.log(err);
+            res(Error("Mysql Error Occured"));
+        }
+        myConnection.connect();
+        myConnection.query(`SELECT * FROM ORDERS WHERE item_id = ${itemId} AND status = 3 AND user_id = ${userId}`, (err,rows) => err? handleErr(err): res(rows[0] ? true : false));
+        myConnection.end();
+    })
+    return false;
+}
