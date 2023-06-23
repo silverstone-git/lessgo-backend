@@ -3,6 +3,7 @@ import mysql, { Connection } from 'mysql';
 import { v4 as uuidv4 } from 'uuid';
 import { CartItem } from '../models/models';
 import * as itemsRepo from './items_repository';
+import { jsDateToMysql } from '../common/dates';
 
 const mysqlUser: string = process.env.MYSQL_USER == undefined ? '' : process.env.MYSQL_USER;
 const mysqlPassword: string = process.env.MYSQL_PASSWORD == undefined ? '' : process.env.MYSQL_PASSWORD;
@@ -15,10 +16,6 @@ async function connection(databaseName: string) {
         password: mysqlPassword,
         database: databaseName,
     })
-}
-
-function jsDateToMysql(date: Date) {
-    return `${date.getFullYear()}-${date.getMonth()}-${date.getDay()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
 }
 
 function encodeUuidToNumber(myUuid: string) {
@@ -59,7 +56,7 @@ export async function getReviews(itemId: number) {
         const newReviewsArray: Array<any> = [];
         for(var i = 0; i < reviews.length; i ++) {
             const username = await getUsernameFromUserIds(myConnection, reviews[i].user_id);
-            newReviewsArray.push({...reviews[i], "username": username});
+            newReviewsArray.push({...reviews[i], "username": username, date_added: (reviews[i].date_added as Date).valueOf()});
         }
         myConnection.end();
         res(newReviewsArray);

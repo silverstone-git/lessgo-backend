@@ -2,6 +2,7 @@ import { Category, Item } from "../models/models";
 import mysql, { Connection } from 'mysql';
 
 import { v4 as uuidv4 } from 'uuid';
+import { jsDateToMysql } from "../common/dates";
 
 const mysqlUser: string = process.env.MYSQL_USER == undefined ? '' : process.env.MYSQL_USER;
 const mysqlPassword: string = process.env.MYSQL_PASSWORD == undefined ? '' : process.env.MYSQL_PASSWORD;
@@ -17,10 +18,6 @@ async function connection(databaseName: string) {
     })
 }
 
-
-function jsDateToMysql(date: Date) {
-    return `${date.getFullYear()}-${date.getMonth()}-${date.getDay()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
-}
 
 function encodeUuidToNumber(myUuid: string) {
     let i: number;
