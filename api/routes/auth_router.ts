@@ -63,7 +63,7 @@ router.post('/create', async (req: any, res: any) => {
         // sign the user up	
         // make the validArray[0] = -2 if connection error
         const hashedPassword = await authRepo.hashedPassword(req.body.password);
-        const exitCode = await authRepo.createUser(new User(username, email, hashedPassword, vendorReq));
+        const exitCode = await authRepo.createUser(new User(username, email, hashedPassword, vendorReq, undefined, new Date(), undefined, ''));
         if(exitCode == 0) {
             res.status(201).json({"succ": true, "message" : "User has been successfully created, please proceed to Login"});
         } else if(exitCode == -2) {
@@ -105,7 +105,7 @@ router.get("/getaddress", async (req: any, res: any) => {
 		return;
 	}
 
-    const exitString = await authRepo.getUserAddress(jwtVerify.userId);
+    const exitString = await authRepo.getUserAddressForce(jwtVerify.userId);
     if(exitString === '') {
         res.json({succ: false, address: ""});
     } else {

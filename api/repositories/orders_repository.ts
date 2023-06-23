@@ -2,8 +2,9 @@
 import mysql, { Connection } from 'mysql';
 
 import { v4 as uuidv4 } from 'uuid';
-import { CartItem } from '../models/models';
+import { CartItem, Item } from '../models/models';
 import * as itemsRepo from './items_repository';
+import { getUserAddress } from './auth_repository';
 
 const mysqlUser: string = process.env.MYSQL_USER == undefined ? '' : process.env.MYSQL_USER;
 const mysqlPassword: string = process.env.MYSQL_PASSWORD == undefined ? '' : process.env.MYSQL_PASSWORD;
@@ -59,18 +60,19 @@ export async function existsInCartForce(userId: string, itemId: string) {
     });
 }
 
-function insertIntoCart(userId: string, itemId: string, count: number, myConnection: Connection) {
+function insertIntoCart(userId: string, itemId: string, count: number, myConnection: Connection, dateAdded: Date) {
     return new Promise<number>((resolve, reject) => {
         myConnection.query(`
         INSERT INTO
-        orders (order_id, user_id, item_id, status, count, cart_at)
+        orders (order_id, user_id, item_id, status, count, cart_at, listed_at)
         VALUES (
             ${encodeUuidToNumber(uuidv4())},
             ${userId},
             ${itemId},
             2,
             ${count},
-            '${jsDateToMysql(new Date())}'
+            '${jsDateToMysql(new Date())}',
+            '${jsDateToMysql(dateAdded)}'
         );
         `, (err, rows, fields) => {
             if(err) {
@@ -112,7 +114,8 @@ export async function addToCart(userId: string, cart: Object) {
             if(await existsInCart(userId, itemId, myConnection)) {
                 exitCode = await updateCartCount(userId, itemId, count, myConnection);
             } else {
-                exitCode = await insertIntoCart(userId, itemId, count, myConnection);
+                const dateAddedString: string = await itemsRepo.getDateAddedString(myConnection, Number(itemId));
+                exitCode = await insertIntoCart(userId, itemId, count, myConnection, new Date(Number(dateAddedString)));
             }
         }
         myConnection.end();
@@ -297,10 +300,8 @@ export async function getListedItems(userId: number) {
 }
 
 
-export async function placeOrder(userId: number, address: string) {
+async function placeOrderFromId(myConnection: Connection, userId: number, address: string) {
     return new Promise<number>(async (res, rej) => {
-        const myConnection = await connection(mysqlDBName);
-        myConnection.connect();
         myConnection.query(`UPDATE orders SET status = 3, address = '${address}', placed_at = '${jsDateToMysql(new Date())}' WHERE user_id = ${userId} and status = 2`, (err, rows, fields) => {
             if(err) {
                 console.log(err);
@@ -309,6 +310,38 @@ export async function placeOrder(userId: number, address: string) {
                 res(0);
             }
         });
+    })
+}
+
+
+async function addAddressToUser(myConnection: Connection, userId: number, address: string) {
+    return new Promise<number>((res, rej) => {
+        const queryStr = `UPDATE users SET address = '${address}' WHERE user_id = ${userId};`;
+        myConnection.query(queryStr, (err, rows, fields) => {
+            if(err) {
+                console.log(err);
+                res(1)
+            } else {
+                res(0);
+            }
+        })
+    })
+}
+
+
+export async function placeOrder(userId: number, address: string) {
+    return new Promise<number>(async (res, rej) => {
+        const myConnection = await connection(mysqlDBName);
+        myConnection.connect();
+        let exit = 1;
+        if(!address || address === 'undefined') {
+            const defaultAddress = await getUserAddress(myConnection, userId);
+            exit = await placeOrderFromId(myConnection, userId, defaultAddress);
+        } else {
+            await addAddressToUser(myConnection, userId, address);
+            exit = await placeOrderFromId(myConnection, userId, address);
+        }
+        res(exit);
         myConnection.end();
     })
 }

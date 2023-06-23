@@ -26,9 +26,9 @@ router.post("/cart", async (req, res) => {
     if(typeof itemsOrAreThey === 'number') {
         // this is an error code, not a cart item array
         if(itemsOrAreThey === 1) {
-            res.status(400).json({"succ": false, "message": "Please go to Items tab to add some items"});
+            res.status(404).json({"succ": false, "message": "Please go to Items tab to add some items"});
         } else {
-            res.status(400).json({"succ": false, "message": "Some Error Occured while fetching Cart Items"});
+            res.status(500).json({"succ": false, "message": "Some Error Occured while fetching Cart Items"});
         }
     } else {
         const cartItemObjArr: any[] = [];
@@ -111,10 +111,6 @@ router.post('/place', async (req: any, res: any) => {
 	}
 
 	let receivedAddress =  req.body["address"];
-	const isAddressEmpty =  !req.body["address"] || receivedAddress	=== 'undefined';
-	if(isAddressEmpty) {
-		receivedAddress = await authRepo.getUserAddress(jwtVerify.itemId);
-	}
 
 	// get user saved address if not entered new in place order form
 	const exitCode = await ordersRepo.placeOrder(jwtVerify.userId, receivedAddress);

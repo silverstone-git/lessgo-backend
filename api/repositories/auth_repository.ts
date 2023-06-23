@@ -39,7 +39,7 @@ export async function findUser(email: string, passedConnection: Connection | boo
     // finding the user by username
     let found = false;
 
-    let user: User = new User('', '', '', false);
+    let user: User = User.johnDoe();
 
     if(typeof passedConnection != 'boolean') {
         // if already a connection exists, the function uses that
@@ -181,10 +181,8 @@ export async function hashedPassword(password: string) {
     return await argon2.hash(password);
 }
 
-export async function getUserAddress(userId: number) {
+export async function getUserAddress(myConnection: Connection, userId: number) {
     return new Promise<string>(async (res, rej) => {
-        const myConnection = await connection(mysqlDBName);
-        myConnection.connect();
         myConnection.query(`SELECT address FROM users WHERE user_id = '${userId}' `, async (err, rows, fields) => {
             if(err) {
                 console.log(err);
@@ -197,5 +195,15 @@ export async function getUserAddress(userId: number) {
                 }
             }
         })
+    })
+}
+
+
+export async function getUserAddressForce(userId: number) {
+    return new Promise<string>(async (res, rej) => {
+        const myConnection = await connection(mysqlDBName);
+        const addressFromTable = await getUserAddress(myConnection, userId);
+        res(addressFromTable);
+        myConnection.end();
     })
 }

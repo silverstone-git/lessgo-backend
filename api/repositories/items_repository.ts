@@ -52,7 +52,8 @@ export async function post(item: Item) {
             ${item.priceRs},
             '${jsDateToMysql(new Date())}',
             '${item.image}',
-            '${item.video}'
+            '${item.video}',
+            ${item.hits}
         );
         `, (err, rows, fields) => {
             if(err) {
@@ -116,7 +117,7 @@ export async function getOne(myConnection: Connection, itemId: number, returnObj
                     if(returnObj) {
                         resolve({});
                     } else {
-                        resolve(new Item('', '', Category.elec, false, 0, new Date(), '', '', undefined));
+                        resolve(Item.johnDoe());
                     }
                 }
             }
@@ -125,26 +126,39 @@ export async function getOne(myConnection: Connection, itemId: number, returnObj
 
 }
 
-export async function getOneForce(itemId: number) {
+
+export async function getDateAddedString(myConnection: Connection, itemId: number) {
+
+    return new Promise<string>((resolve, reject) => {
+        myConnection.query(`
+            SELECT unix_timestamp(date_added)*1000 as date_added FROM items WHERE item_id = ${itemId};
+            `, (err, rows, fields) => {
+                if(err) {
+                    console.log(err);
+                    resolve('0');
+                } else {
+                    resolve(rows[0].date_added);
+                }
+            }
+        );
+    })
+
+}
+
+
+export async function getOneForce(itemId: number, loggedIn: boolean) {
 
     return new Promise<Object | number>( async (resolve, reject) => {
         const myConnection = await connection(mysqlDBName);
         myConnection.connect();
-        myConnection.query(`
-            SELECT * FROM items WHERE item_id = ${itemId};
-            `, (err, rows, fields) => {
-                //
-                if(err) {
-                    console.log(err);
-                    resolve(1)
-                }
-                if(rows[0]) {
-                    resolve(rows[0] as Object);
-                } else {
-                    resolve(2)
-                }
-            }
-        );
+        const item: any = await getOne(myConnection, itemId, true);
+        if(loggedIn) {
+            await incrementHitInItem(myConnection, itemId.toString());
+        }
+        if(item.item_name)
+            resolve(item);
+        else
+            resolve({});
         myConnection.end();
     })
 
@@ -190,11 +204,11 @@ export function carouselByCategory(category: string) {
     })
 }
 
-export async function incrementHitInItem(passedItem: string) {
+export async function incrementHitInItem(myConnection: Connection, passedItem: string) {
     return new Promise<number>(async (res, rej) =>{
         const myConnection = await connection(mysqlDBName);
         myConnection.connect();
-        myConnection.query(`UPDATE items SET hits = hits + 1 WHERE item_id = ${passedItem};`, (err, rows, fields) => {
+        myConnection.query(`UPDATE items SET hits = hits + IF(hits < 100000000, 1, -1) WHERE item_id = ${passedItem};`, (err, rows, fields) => {
             if(err) {
                 console.log(err);
                 res(1);
