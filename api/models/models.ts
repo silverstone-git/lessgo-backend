@@ -171,6 +171,10 @@ export class CartItem extends Item {
             "order_id": passedOrderId,
         }
     }
+
+    public static johnDoe(): CartItem {
+        return CartItem.fromMap(CartItem.mapFromItem(super.johnDoe(), 0, new Date(0), 0));
+    }
 }
 
 export class Order {

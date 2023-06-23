@@ -146,14 +146,14 @@ export async function deleteFromOrders(userId: string, id: number) {
 }
 
 
-async function getOrdersFromUserId(myConnection: Connection, userId: number, statusCode: number, sendItemIdsOnly = false) {
-    //
+async function getOrdersFromUserId(myConnection: Connection, userId: number | undefined = undefined, statusCode: number, sendItemIdsOnly = false, itemId: number | undefined = undefined) {
     return new Promise<Array<any>>(async (resolve, reject) => {
         const cart: Array<any> = [];
-        myConnection.query(`
-        SELECT item_id, count, cart_at, order_id FROM orders WHERE user_id = ${userId} AND status = ${statusCode};
-        `, (err, rows, fields) => {
-            //
+        const queryStr = `
+        SELECT * FROM orders WHERE ${userId ? "user_id = " + userId + " AND " : ""} ${itemId ? "item_id = " + itemId + " AND " : ""} status = ${statusCode};
+        `
+        console.log("query for getting orders is: ", queryStr);
+        myConnection.query(queryStr, (err, rows, fields) => {
             if(err) {
                 console.log("error while doing querying orders");
                 console.log(err);
@@ -179,10 +179,10 @@ async function getOrdersFromUserId(myConnection: Connection, userId: number, sta
 }
 
 
-async function getCartItemFromId(myConnection: Connection, cartObj: any) {
+async function getCartItemFromId(myConnection: Connection, cartObj: any, getImage : boolean = true, getVideo: boolean = false) {
     return new Promise<CartItem>((resolve, reject) => {
         myConnection.query(`
-            SELECT * FROM items WHERE item_id = ${cartObj.item_id};
+            SELECT item_id, item_name, description, category, in_stock, in_stock, price_rs, date_added, hits ${getImage ? " ,image " : ""} ${getVideo ? ",video ": ""} FROM items WHERE item_id = ${cartObj.item_id};
             `, (err, rows, fields) => {
                 //
                 if(err) {
@@ -196,6 +196,8 @@ async function getCartItemFromId(myConnection: Connection, cartObj: any) {
                     //
                     let cartItemMap = {...rows[0], "count": cartObj.count, "cart_at": cartObj.cart_at, "order_id": cartObj.order_id};
                     resolve(CartItem.fromMap(cartItemMap));
+                } else {
+                    resolve(CartItem.johnDoe());
                 }
             }
         );
@@ -220,7 +222,7 @@ export async function getFromCart(userId: number) {
         // getting item from row[i].item_id and extending the result by row[i].count
         let i = 0;
         for(i = 0; i < cart.length; i ++) {
-            cartItemsArr.push(await getCartItemFromId(myConnection, cart[i]))
+            cartItemsArr.push(await getCartItemFromId(myConnection, cart[i], true))
         }
         myConnection.end();
         resolve(cartItemsArr);
@@ -272,27 +274,40 @@ export async function addListedItemToOrder(userId: number, itemId: number) {
     })
 }
 
+
+export async function getListedItemsSub(myConnection: Connection, userId : number, sendItemIdsOnly: boolean = false) {
+    return new Promise<Array<any>>(async (res, rej) => {
+
+        // getting an array of item ids from orders table
+        const listedItemsIds: Array<number> = await getOrdersFromUserId(myConnection, userId, 0, true);
+
+        if(listedItemsIds.length == 0) {
+            res([]);
+            return;
+        }
+        if(sendItemIdsOnly) {
+            res(listedItemsIds);
+            return;
+        }
+
+        const itemsObjects: Array<Object> = [];
+
+        for(var i = 0; i < listedItemsIds.length; i ++) {
+            let itemObj: any = await itemsRepo.getOne(myConnection, listedItemsIds[i], true);
+            itemsObjects.push(itemObj);
+        }
+        res(itemsObjects);
+    })
+}
+
 export async function getListedItems(userId: number) {
     return new Promise<Array<Object> | number>( async (resolve, reject) => {
         const myConnection = await connection(mysqlDBName);
         myConnection.connect();
+        const listedItems = await getListedItemsSub(myConnection, userId, false)
         
-        // getting an array of item ids from orders table
-        const listedItemsIds: Array<number> = await getOrdersFromUserId(myConnection, userId, 0, true);
-        if(listedItemsIds.length == 0) {
-            resolve(2);
-            return;
-        }
-        const itemsObjects: Array<Object> = [];
-
-        for(var i = 0; i < listedItemsIds.length; i ++) {
-            let itemObj = await itemsRepo.getOne(myConnection, listedItemsIds[i], true);
-            itemsObjects.push(itemObj);
-        }
-
-
         myConnection.end();
-        resolve(itemsObjects);
+        resolve(listedItems);
 
     })
 }
@@ -339,8 +354,8 @@ export async function placeOrder(userId: number, address: string) {
             await addAddressToUser(myConnection, userId, address);
             exit = await placeOrderFromId(myConnection, userId, address);
         }
-        res(exit);
         myConnection.end();
+        res(exit);
     })
 }
 
@@ -360,7 +375,7 @@ export function getOrders(userId: number) {
         // getting item from row[i].item_id and extending the result by row[i].count
         let i = 0;
         for(i = 0; i < cart.length; i ++) {
-            cartItemsArr.push(await getCartItemFromId(myConnection, cart[i]));
+            cartItemsArr.push(await getCartItemFromId(myConnection, cart[i], true, false));
         }
         res(cartItemsArr);
         myConnection.end();
@@ -379,5 +394,35 @@ export async function isOrdered(itemId: string, userId: number) {
         myConnection.query(`SELECT * FROM ORDERS WHERE item_id = ${itemId} AND status = 3 AND user_id = ${userId}`, (err,rows) => err? handleErr(err): res(rows[0] ? true : false));
         myConnection.end();
     })
-    return false;
+}
+
+
+export async function getVendorOrders(userId: number) {
+    return new Promise<Array<CartItem>>(async (res, rej) => {
+        const myConnection = await connection(mysqlDBName);
+        myConnection.connect();
+        const ordersArr: Array<any> = [];
+        let listedItemIds: Array<number> = await getListedItemsSub(myConnection, userId, true);
+        if(listedItemIds.length === 0) {
+            res([]);
+            myConnection.end();
+            return;
+        }
+
+
+        let i = 0;
+        for(i = 0; i < listedItemIds.length; i ++) {
+            ordersArr.push(...(await getOrdersFromUserId(myConnection, undefined, 3, false, listedItemIds[i])));
+        }
+
+        const compositeItemOrderArr: Array<any> = [];
+        let el: any;
+        for(i = 0; i < ordersArr.length; i ++) {
+            el = ordersArr[i];
+            const cartItem = await getCartItemFromId(myConnection, {item_id: el.item_id, cart_at: el.cart_at, count: el.count, order_id: el.order_id}, true, false);
+            compositeItemOrderArr.push( {...el, ...CartItem.toMap(cartItem)});
+        }
+        myConnection.end();
+        res(compositeItemOrderArr);
+    });
 }

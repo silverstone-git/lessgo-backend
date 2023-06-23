@@ -157,4 +157,21 @@ router.get('/is-ordered', async (req: any, res: any) => {
 	res.status(succ ? 200 : 400).json({succ: succ, result: result});
 })
 
+router.get('/vendor-orders', async (req, res) => {
+
+	// check jwt in header and determine if is vendor
+	let jwtVerify: any = isAuthed(req.header("authorization"));
+	if(Object.keys(jwtVerify).length > 0 && jwtVerify.isVendor) {
+
+		// get orders from repo
+		const result: Array<CartItem> = await ordersRepo.getVendorOrders(jwtVerify.userId);
+		res.status(200).json({succ: result.length > 0 ? true : false, orders: JSON.stringify(CartItem.toMaps(result))});
+
+	} else {
+		res.status(403).json({"succ": false, "message": "Forbidden"});
+		return;
+	}
+
+})
+
 export default router;
