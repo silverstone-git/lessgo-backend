@@ -152,7 +152,6 @@ async function getOrdersFromUserId(myConnection: Connection, userId: number | un
         const queryStr = `
         SELECT * FROM orders WHERE ${userId ? "user_id = " + userId + " AND " : ""} ${itemId ? "item_id = " + itemId + " AND " : ""} status = ${statusCode};
         `
-        console.log("query for getting orders is: ", queryStr);
         myConnection.query(queryStr, (err, rows, fields) => {
             if(err) {
                 console.log("error while doing querying orders");
@@ -179,8 +178,8 @@ async function getOrdersFromUserId(myConnection: Connection, userId: number | un
 }
 
 
-async function getCartItemFromId(myConnection: Connection, cartObj: any, getImage : boolean = true, getVideo: boolean = false) {
-    return new Promise<CartItem>((resolve, reject) => {
+async function getCartItemFromId(myConnection: Connection, cartObj: any, getImage : boolean = true, getVideo: boolean = false, getObj: boolean = false) {
+    return new Promise<any>((resolve, reject) => {
         myConnection.query(`
             SELECT item_id, item_name, description, category, in_stock, in_stock, price_rs, date_added, hits ${getImage ? " ,image " : ""} ${getVideo ? ",video ": ""} FROM items WHERE item_id = ${cartObj.item_id};
             `, (err, rows, fields) => {
@@ -195,9 +194,15 @@ async function getCartItemFromId(myConnection: Connection, cartObj: any, getImag
                     //
                     //
                     let cartItemMap = {...rows[0], "count": cartObj.count, "cart_at": cartObj.cart_at, "order_id": cartObj.order_id};
-                    resolve(CartItem.fromMap(cartItemMap));
+                    if(getObj)
+                        resolve(cartItemMap);
+                    else
+                        resolve(CartItem.fromMap(cartItemMap));
                 } else {
-                    resolve(CartItem.johnDoe());
+                    if(getObj)
+                        resolve({});
+                    else
+                        resolve(CartItem.johnDoe());
                 }
             }
         );
@@ -419,8 +424,9 @@ export async function getVendorOrders(userId: number) {
         let el: any;
         for(i = 0; i < ordersArr.length; i ++) {
             el = ordersArr[i];
-            const cartItem = await getCartItemFromId(myConnection, {item_id: el.item_id, cart_at: el.cart_at, count: el.count, order_id: el.order_id}, true, false);
-            compositeItemOrderArr.push( {...el, ...CartItem.toMap(cartItem)});
+            const cartItem = await getCartItemFromId(myConnection, {item_id: el.item_id, cart_at: el.cart_at, count: el.count, order_id: el.order_id}, true, false, true);
+            const composite = Object.assign(el, cartItem);
+            compositeItemOrderArr.push(composite);
         }
         myConnection.end();
         res(compositeItemOrderArr);

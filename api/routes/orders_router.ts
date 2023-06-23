@@ -164,8 +164,8 @@ router.get('/vendor-orders', async (req, res) => {
 	if(Object.keys(jwtVerify).length > 0 && jwtVerify.isVendor) {
 
 		// get orders from repo
-		const result: Array<CartItem> = await ordersRepo.getVendorOrders(jwtVerify.userId);
-		res.status(200).json({succ: result.length > 0 ? true : false, orders: JSON.stringify(CartItem.toMaps(result))});
+		const result: Array<any> = await ordersRepo.getVendorOrders(jwtVerify.userId);
+		res.status(200).json({succ: result.length > 0 ? true : false, orders: JSON.stringify(result)});
 
 	} else {
 		res.status(403).json({"succ": false, "message": "Forbidden"});
