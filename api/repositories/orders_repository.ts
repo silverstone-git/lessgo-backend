@@ -396,7 +396,7 @@ export async function isOrdered(itemId: string, userId: number) {
             res(Error("Mysql Error Occured"));
         }
         myConnection.connect();
-        myConnection.query(`SELECT * FROM ORDERS WHERE item_id = ${itemId} AND status = 3 AND user_id = ${userId}`, (err,rows) => err? handleErr(err): res(rows[0] ? true : false));
+        myConnection.query(`SELECT * FROM orders WHERE item_id = ${itemId} AND status = 3 AND user_id = ${userId} and received_at IS NOT NULL;`, (err,rows) => err? handleErr(err): res(rows[0] ? true : false));
         myConnection.end();
     })
 }
@@ -430,5 +430,23 @@ export async function getVendorOrders(userId: number) {
         }
         myConnection.end();
         res(compositeItemOrderArr);
+    });
+}
+
+
+
+export async function receivedPayment(orderId: number) {
+    return new Promise<number>(async (res, rej) => {
+        const myConnection = await connection(mysqlDBName);
+        myConnection.connect();
+        myConnection.query(`UPDATE orders set received_at = '${jsDateToMysql(new Date())}' WHERE order_id = ${orderId};`, (err, rows, fields) => {
+            if(err) {
+                console.log(err);
+                res(1);
+            } else {
+                res(0);
+            }
+        });
+        myConnection.end();
     });
 }

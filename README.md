@@ -17,10 +17,11 @@
 >    user_id integer not null,
 >    username varchar(200) not null,
 >    email varchar(150) not null,
->    password varchar(50) not null,
+>    password varchar(300) not null,
 >    is_vendor boolean not null,
 >    last_login datetime,
 >    joined_dt datetime,
+>    address varchar(500),
 >    primary key(user_id)
 >)
 > engine = INNODB;
@@ -37,6 +38,7 @@
 >    date_added datetime not null,
 >    image longtext,
 >    video longtext,
+>    hits bigint,
 >    primary key(item_id)
 >)
 > engine = INNODB;
@@ -52,7 +54,8 @@
 >    cart_at datetime,
 >    placed_at datetime,
 >    received_at datetime,
->    listed_at datetime
+>    listed_at datetime,
+>    address varchar(500),
 >    primary key (order_id),
 >    foreign key (user_id) references users(user_id) on update cascade on delete cascade,
 >    foreign key (item_id) references items(item_id) on update cascade on delete restrict

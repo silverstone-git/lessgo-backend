@@ -174,4 +174,20 @@ router.get('/vendor-orders', async (req, res) => {
 
 })
 
+router.post('/received-payment', async (req, res) => {
+	let jwtVerify: any = isAuthed(req.body["Authorization"]);
+	if(Object.keys(jwtVerify).length === 0 || !jwtVerify.isVendor) {
+		res.status(403).json({"succ": false, "message": "Forbidden"});
+		return;
+	}
+
+	const exitCode: number = await ordersRepo.receivedPayment(req.body["orderId"]);
+	
+	if(exitCode === 0) {
+		res.status(201).json({succ: true});
+	} else {
+		res.status(400).json({succ: false});
+	}
+})
+
 export default router;
