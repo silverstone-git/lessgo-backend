@@ -44,9 +44,6 @@ router.get('/get-item/:id', async (req: any, res: any) => {
 		})
 	}
 
-	//
-	// TODO: Dates arent being parsed from MySQL properly to javascript format
-	//
 });
 
 
@@ -59,7 +56,8 @@ router.post('/get-items', async (req: any, res: any) => {
 		return;
 	}
 
-	let itemsOrAreThey: Array<any> | number = await itemsRepo.get(req.body['page']);
+
+	let itemsOrAreThey: Array<any> | number = await itemsRepo.get(req.body['page'], req.body['category'] ? req.body.category : undefined);
 
 	if(typeof itemsOrAreThey === 'number') {
 		let message: string = "Unhandled Exception";

@@ -193,7 +193,7 @@ async function getCartItemFromId(myConnection: Connection, cartObj: any, getImag
                     // CHANGE THIS LINE IF MODEL CHANGES
                     //
                     //
-                    let cartItemMap = {...rows[0], "count": cartObj.count, "cart_at": cartObj.cart_at, "order_id": cartObj.order_id, "received_at": cartObj.received_at};
+                    let cartItemMap = {...rows[0], "count": cartObj.count, "cart_at": cartObj.cart_at, "order_id": cartObj.order_id, "received_at": cartObj.received_at, "placed_at": cartObj.placed_at};
                     if(getObj)
                         resolve(cartItemMap);
                     else
@@ -424,7 +424,8 @@ export async function getVendorOrders(userId: number) {
         let el: any;
         for(i = 0; i < ordersArr.length; i ++) {
             el = ordersArr[i];
-            const cartItem = await getCartItemFromId(myConnection, {item_id: el.item_id, cart_at: el.cart_at, count: el.count, order_id: el.order_id}, true, false, true);
+            // const cartItem = await getCartItemFromId(myConnection, {item_id: el.item_id, cart_at: el.cart_at, count: el.count, order_id: el.order_id}, true, false, true);
+            const cartItem = await getCartItemFromId(myConnection, el, true, false, true);
             const composite = Object.assign(el, cartItem);
             compositeItemOrderArr.push(composite);
         }

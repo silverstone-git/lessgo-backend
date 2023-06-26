@@ -63,14 +63,14 @@ export async function post(item: Item) {
     })
 }
 
-export async function get(page: number) {
+export async function get(page: number, category : string | undefined = undefined) {
     return new Promise<Array<any> | number>( async (resolve, reject) => {
 
         const itemsArr: Array<any> = [];
         const myConnection = await connection(mysqlDBName);
         myConnection.connect();
         myConnection.query(`
-        SELECT * FROM items ORDER BY hits DESC LIMIT ${page*pageLength},${pageLength};
+        SELECT * FROM items ${category? ` WHERE category = '${category}' ` : ''} ORDER BY hits DESC LIMIT ${page*pageLength},${pageLength};
         `, (err, rows, fields) => {
             //
             if(err) {
