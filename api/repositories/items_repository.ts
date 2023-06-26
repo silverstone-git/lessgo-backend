@@ -63,14 +63,19 @@ export async function post(item: Item) {
     })
 }
 
-export async function get(page: number, category : string | undefined = undefined) {
+export async function get(page: number, category : string | undefined = undefined, getVideo: boolean | undefined = true) {
     return new Promise<Array<any> | number>( async (resolve, reject) => {
 
         const itemsArr: Array<any> = [];
         const myConnection = await connection(mysqlDBName);
         myConnection.connect();
+        //
+        //  TODO
+        //
+        // construct this list conditionally from models
+        //
         myConnection.query(`
-        SELECT * FROM items ${category? ` WHERE category = '${category}' ` : ''} ORDER BY hits DESC LIMIT ${page*pageLength},${pageLength};
+        SELECT item_id, item_name, description, category, in_stock, price_rs, date_added, image, video, item_id, hits ${getVideo ? ', video ' : ' '} FROM items ${category? ` WHERE category = '${category}' ` : ''} ORDER BY hits DESC LIMIT ${page*pageLength},${pageLength};
         `, (err, rows, fields) => {
             //
             if(err) {
