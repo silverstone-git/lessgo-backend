@@ -193,7 +193,7 @@ async function getCartItemFromId(myConnection: Connection, cartObj: any, getImag
                     // CHANGE THIS LINE IF MODEL CHANGES
                     //
                     //
-                    let cartItemMap = {...rows[0], "count": cartObj.count, "cart_at": cartObj.cart_at, "order_id": cartObj.order_id};
+                    let cartItemMap = {...rows[0], "count": cartObj.count, "cart_at": cartObj.cart_at, "order_id": cartObj.order_id, "received_at": cartObj.received_at};
                     if(getObj)
                         resolve(cartItemMap);
                     else
@@ -366,10 +366,10 @@ export async function placeOrder(userId: number, address: string) {
 
 export function getOrders(userId: number) {
     // returns a promise of array of cart items
-    return new Promise<Array<CartItem>>(async (res, rej) => {
+    return new Promise<Array<any>>(async (res, rej) => {
         const myConnection = await connection(mysqlDBName);
         myConnection.connect();
-        const cartItemsArr: Array<CartItem> = [];
+        const cartItemsArr: Array<any> = [];
         let cart: Array<any> = await getOrdersFromUserId(myConnection, userId, 3);
         if(cart.length === 0) {
             res([]);
@@ -380,7 +380,7 @@ export function getOrders(userId: number) {
         // getting item from row[i].item_id and extending the result by row[i].count
         let i = 0;
         for(i = 0; i < cart.length; i ++) {
-            cartItemsArr.push(await getCartItemFromId(myConnection, cart[i], true, false));
+            cartItemsArr.push(await getCartItemFromId(myConnection, cart[i], true, false, true));
         }
         res(cartItemsArr);
         myConnection.end();

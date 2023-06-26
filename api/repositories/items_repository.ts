@@ -1,4 +1,4 @@
-import { Category, Item } from "../models/models";
+import { Category, Item, pageLength } from "../models/models";
 import mysql, { Connection } from 'mysql';
 
 import { v4 as uuidv4 } from 'uuid';
@@ -63,14 +63,14 @@ export async function post(item: Item) {
     })
 }
 
-export async function get() {
+export async function get(page: number) {
     return new Promise<Array<any> | number>( async (resolve, reject) => {
 
         const itemsArr: Array<any> = [];
         const myConnection = await connection(mysqlDBName);
         myConnection.connect();
         myConnection.query(`
-        SELECT * FROM items;
+        SELECT * FROM items ORDER BY hits DESC LIMIT ${page*pageLength},${pageLength};
         `, (err, rows, fields) => {
             //
             if(err) {

@@ -59,7 +59,7 @@ router.post('/get-items', async (req: any, res: any) => {
 		return;
 	}
 
-	let itemsOrAreThey: Array<any> | number = await itemsRepo.get();
+	let itemsOrAreThey: Array<any> | number = await itemsRepo.get(req.body['page']);
 
 	if(typeof itemsOrAreThey === 'number') {
 		let message: string = "Unhandled Exception";

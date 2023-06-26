@@ -261,3 +261,5 @@ export class Review {
     }
 
 }
+
+export const pageLength = 8;

@@ -126,9 +126,9 @@ router.get('/your-orders', async (req, res) => {
 		return;
 	}
 
-	const result: Array<CartItem> = await ordersRepo.getOrders(jwtVerify.userId);
+	const result: Array<any> = await ordersRepo.getOrders(jwtVerify.userId);
 
-	res.status(200).json({succ: result.length > 0 ? true : false, orders: JSON.stringify(CartItem.toMaps(result))});
+	res.status(200).json({succ: result.length > 0 ? true : false, orders: JSON.stringify(result)});
 
 })
 
