@@ -58,12 +58,23 @@ router.post('/create', async (req: any, res: any) => {
         return;
     }
     
-    const validCheckRes: Array<number> = await checkValid(req.body);
+    let validCheckRes: Array<number>;
+    const oauth = req.body['auth_type'] !== 'argon';
+    if(oauth) {
+        validCheckRes = [1,1,1,1];
+    } else {
+        validCheckRes = await checkValid(req.body);
+    }
     if(JSON.stringify(validCheckRes) == JSON.stringify([1,1,1,1])) {
         // sign the user up	
         // make the validArray[0] = -2 if connection error
-        const hashedPassword = await authRepo.hashedPassword(req.body.password);
-        const exitCode = await authRepo.createUser(new User(username, email, hashedPassword, vendorReq, undefined, new Date(), undefined, ''));
+        let hashedPassword;
+        if(oauth) {
+            hashedPassword = '';
+        } else {
+            hashedPassword = await authRepo.hashedPassword(req.body.password);
+        }
+        const exitCode = await authRepo.createUser(new User(username, email, hashedPassword, vendorReq, undefined, new Date(), undefined, '', req.body['auth_type'], req.body['dp']), oauth);
         if(exitCode == 0) {
             res.status(201).json({"succ": true, "message" : "User has been successfully created, please proceed to Login"});
         } else if(exitCode == -2) {
@@ -112,6 +123,15 @@ router.get("/getaddress", async (req: any, res: any) => {
         res.json({succ: true, address: exitString});
     }
 
+})
+
+router.post('/google-finduser', async (req, res) => {
+    const exists = await authRepo.findUser(req.body['email'], false);
+    if(exists) {
+        res.status(200).json({exists : true});
+    } else {
+        res.status(200).json({exists: false});
+    }
 })
 
 export default router;

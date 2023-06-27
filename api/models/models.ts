@@ -9,8 +9,10 @@ export class User {
     lastLogin: Date | undefined;
     joinedDt: Date | undefined;
     address: string;
+    authType: string;
+    dp: string;
 
-    public constructor(username: string, email: string, password: string, isVendor: boolean, lastLogin: Date | undefined = undefined, joinedDt: Date | undefined = undefined,  userId: number | undefined = undefined, address: string) {
+    public constructor(username: string, email: string, password: string, isVendor: boolean, lastLogin: Date | undefined = undefined, joinedDt: Date | undefined = undefined,  userId: number | undefined = undefined, address: string, authType: string, dp: string) {
         this.username = username;
         this.email = email;
         this.password = password;
@@ -19,15 +21,17 @@ export class User {
         this.isVendor = isVendor;
         this.userId = userId;
         this.address = address;
+        this.authType = authType;
+        this.dp = dp;
     }
 
     public static fromMap(map: any) {
         // returns a user instance
-        return new User(map.username, map.email, map.password, map.is_vendor === 1 ? true : false, map.last_login, map.joined_dt, map.user_id, map.address);
+        return new User(map.username, map.email, map.password, map.is_vendor === 1 ? true : false, map.last_login, map.joined_dt, map.user_id, map.address, map.auth_type, map.dp);
     }
 
     public static johnDoe() {
-        return new User('', '', '', false, undefined, undefined, undefined, '');
+        return new User('', '', '', false, undefined, undefined, undefined, '', 'argon', '');
     }
 }
 
@@ -43,21 +47,19 @@ export enum Category {
     other = "Other",
 }
 
-/*
 export const categoryIcons = () => {
     const dArr: Array<any> = [
-    ['elec' , icon({name: 'bolt'})],
-    ['mach', icon({name: 'gears'})],
-    ['veh', icon({name: 'car'})],
-    ['mat', icon({name: 'screwdriver-wrench'})],
-    ['fmcg', icon({name: 'cookie-bite'})],
-    ['groc', icon({name: 'carrot'})],
-    ['laptop', icon({name: 'laptop'})],
-    ['other', icon({name: 'ellipsis'})],
+    // ['elec' , icon({name: 'bolt'})],
+    // ['mach', icon({name: 'gears'})],
+    // ['veh', icon({name: 'car'})],
+    // ['mat', icon({name: 'screwdriver-wrench'})],
+    // ['pkd', icon({name: 'cookie-bite'})],
+    // ['groc', icon({name: 'carrot'})],
+    // ['laptop', icon({name: 'laptop'})],
+    // ['other', icon({name: 'ellipsis'})],
     ];
     return new Map(dArr);
 };
-*/
 
 /*
 export const getFullNameIcons = () => {

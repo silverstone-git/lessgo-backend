@@ -21,7 +21,7 @@ async function connection(databaseName: string) {
 }
 
 
-function encodeUuidToNumber(myUuid: string) {
+export function encodeUuidToNumber(myUuid: string) {
     let i: number;
     let numString = "";
     for(i = 0; i < myUuid.length; i ++) {
@@ -32,7 +32,7 @@ function encodeUuidToNumber(myUuid: string) {
 }
 
 
-export async function findUser(email: string, passedConnection: Connection | boolean = false) {
+export async function findUser(email: string, passedConnection: Connection | boolean = false, searchInArgonOnly: boolean = false) {
     // finding the user by username
     let found = false;
 
@@ -44,7 +44,7 @@ export async function findUser(email: string, passedConnection: Connection | boo
         // the user's presence in db is needed to be validated
         return new Promise<User>(async (resolve, reject) => {
             // handler
-            passedConnection.query(`SELECT * FROM users WHERE email = '${email}' `, (err, rows, fields) => {
+            passedConnection.query(`SELECT * FROM users WHERE email = '${email}' ${searchInArgonOnly ? ' AND auth_type = argon ': ''} ;`, (err, rows, fields) => {
                 // handle the query result
                 if(err) {
                     console.log(err);
@@ -65,7 +65,7 @@ export async function findUser(email: string, passedConnection: Connection | boo
         const myConnection = await connection(mysqlDBName);
         return new Promise<User>(async (resolve, reject) => {
             myConnection.connect();
-            myConnection.query(`SELECT * FROM users WHERE email = '${email}' `, async (err, rows, fields) => {
+            myConnection.query(`SELECT * FROM users WHERE email = '${email}' ${searchInArgonOnly ? ' AND auth_type = argon ': ''} `, async (err, rows, fields) => {
                 // handle the query result
                 if(err) {
                     console.log(err);
@@ -92,10 +92,22 @@ export async function loginUser(email: string, enteredPassword: string) {
     return new Promise<User | number>(async (resolve, reject) => {
         const connectionForLogIn = await connection(mysqlDBName);
         connectionForLogIn.connect();
-        const userInDB: User = await findUser(email, connectionForLogIn);
+        const userInDB: User = await findUser(email, connectionForLogIn, true);
         if(userInDB.username != "") {
             // the case when user is found in the database
-            const isVerified = await verifyPassword(userInDB.password, enteredPassword);
+            let isVerified;
+            if(userInDB.authType === 'argon') {
+                isVerified = await verifyPassword(userInDB.password, enteredPassword);
+            }
+            else if(userInDB.authType === 'google') {
+                // check authentication via google
+                // you want to confirm whether the account logged in the browser is
+                // the same as the user info stored in the database
+                // until then..
+                isVerified = false;
+            } else {
+                isVerified = false;
+            }
             if(isVerified) {
                 await updateLastLoggedIn(email, new Date(), connectionForLogIn);
                 connectionForLogIn.end();
@@ -111,21 +123,23 @@ export async function loginUser(email: string, enteredPassword: string) {
     })
 }
 
-export async function createUser(user: User) {
+export async function createUser(user: User, oauth: boolean = false) {
     // finding the user by username
     const connectionForCreate = await connection(mysqlDBName);
     connectionForCreate.connect();
     let exitCode = 0;
     connectionForCreate.query(`
     INSERT INTO
-    users (user_id, username, email, password, is_vendor, joined_dt)
+    users (user_id, username, email, password, is_vendor, joined_dt, auth_type, dp)
     VALUES (
-    ${encodeUuidToNumber(uuidv4())},
+    ${oauth ? encodeUuidToNumber(user.email) : encodeUuidToNumber(uuidv4())},
     '${user.username}',
     '${user.email}',
     '${user.password}',
     ${user.isVendor},
-    '${jsDateToMysql(new Date())}'
+    '${jsDateToMysql(new Date())}',
+    '${user.authType}',
+    '${user.dp}'
     );
     `,
     (err, rows, fields) => {
@@ -204,3 +218,4 @@ export async function getUserAddressForce(userId: number) {
         myConnection.end();
     })
 }
+
