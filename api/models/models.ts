@@ -1,3 +1,5 @@
+// import { icon } from "@fortawesome/fontawesome-svg-core/import.macro";
+
 export class User {
     userId: number | undefined;
     username: string;
@@ -35,12 +37,43 @@ export enum Category {
     mach = "Factory Machines",
     veh = "Vehicles",
     mat = "Material Components",
-    fmcg = "FMCG Products",
+    pkd = "Packed Food",
+    groc = "Grocery",
+    laptop = "Laptops",
     other = "Other",
 }
 
+/*
+export const categoryIcons = () => {
+    const dArr: Array<any> = [
+    ['elec' , icon({name: 'bolt'})],
+    ['mach', icon({name: 'gears'})],
+    ['veh', icon({name: 'car'})],
+    ['mat', icon({name: 'screwdriver-wrench'})],
+    ['fmcg', icon({name: 'cookie-bite'})],
+    ['groc', icon({name: 'carrot'})],
+    ['laptop', icon({name: 'laptop'})],
+    ['other', icon({name: 'ellipsis'})],
+    ];
+    return new Map(dArr);
+};
+*/
+
+/*
+export const getFullNameIcons = () => {
+    // mymap -> { elec => ["Electronic Accessories", "bolt"], .... }
+    const myMap = new Map();
+    const categories = Category;
+    let category: keyof typeof categories;
+    for(category in categories) {
+        myMap.set(categories[category], categoryIcons.get(category));
+    }
+    return myMap;
+}
+*/
+
 export const initCategoryCarousels: {
-    fmcg: Array<Array<string>>,
+    pkd: Array<Array<string>>,
     veh: Array<Array<string>>,
     elec:Array<Array<string>>,
     mat: Array<Array<string>>, 
@@ -50,7 +83,7 @@ export const initCategoryCarousels: {
     elec: [],
     veh: [],
     mat: [],
-    fmcg: [],
+    pkd: [],
     mach: [],
     other: [],
 }

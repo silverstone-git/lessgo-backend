@@ -75,7 +75,7 @@ export async function get(page: number, category : string | undefined = undefine
         // construct this list conditionally from models
         //
         myConnection.query(`
-        SELECT item_id, item_name, description, category, in_stock, price_rs, date_added, image, video, item_id, hits ${getVideo ? ', video ' : ' '} FROM items ${category? ` WHERE category = '${category}' ` : ''} ORDER BY hits DESC LIMIT ${page*pageLength},${pageLength};
+        SELECT item_id, item_name, description, category, in_stock, price_rs, date_added, image, item_id, hits ${getVideo ? ', video ' : ' '} FROM items ${category? ` WHERE category = '${category}' ` : ''} ORDER BY hits DESC LIMIT ${page*pageLength},${pageLength};
         `, (err, rows, fields) => {
             //
             if(err) {
@@ -99,11 +99,11 @@ export async function get(page: number, category : string | undefined = undefine
 
 
 
-export async function getOne(myConnection: Connection, itemId: number, returnObj: boolean = false) {
+export async function getOne(myConnection: Connection, itemId: number, returnObj: boolean = false, getVideo: boolean = true) {
 
     return new Promise<Item | Object>((resolve, reject) => {
         myConnection.query(`
-            SELECT * FROM items WHERE item_id = ${itemId};
+            SELECT ${getVideo ? '*' : 'item_id, item_name, description, category, in_stock, price_rs, date_added, image, item_id, hits'} FROM items WHERE item_id = ${itemId};
             `, (err, rows, fields) => {
                 //
                 if(rows[0]) {

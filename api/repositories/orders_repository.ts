@@ -298,7 +298,7 @@ export async function getListedItemsSub(myConnection: Connection, userId : numbe
         const itemsObjects: Array<Object> = [];
 
         for(var i = 0; i < listedItemsIds.length; i ++) {
-            let itemObj: any = await itemsRepo.getOne(myConnection, listedItemsIds[i], true);
+            let itemObj: any = await itemsRepo.getOne(myConnection, listedItemsIds[i], true, false);
             itemsObjects.push(itemObj);
         }
         res(itemsObjects);

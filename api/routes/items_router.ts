@@ -177,6 +177,7 @@ router.post('/category', async (req: any, res: any) => {
 		return;
 	}
 
+
 	let arrayOfRowObjects: Array<any> = await itemsRepo.carouselByCategory(req.body["category"]);
 	if(arrayOfRowObjects.length === 0) {
 		res.status(400).json({"succ": false, message: "Error occurred while deleting"});
