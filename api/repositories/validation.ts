@@ -12,7 +12,8 @@ const checkValid = async (body: any) =>  {
 	let usernameIsAlphabetsAndSpaces = /^[a-zA-Z\s]*$/.test(body.username);
 
 
-	let newUser = 1;
+	// skipping exist chack and shifting this burden on the main create account function
+	// let newUser = 1;
     // 0th index indicates whether username is right or not
 	if(body.username.length < 3) {
         validArray.push(0);
@@ -20,12 +21,15 @@ const checkValid = async (body: any) =>  {
 		validArray.push(-1);
 	} else {
 		// if username is alpha numeric and length is big enough, proceed to check if username already exists
+		/*
         const found = await authRepo.getUserByEmail(body.email);
         if(found.username != "") {
             // case when username already exists
             newUser = -2;
         }
         validArray.push(newUser)
+		*/
+        validArray.push(1)
     }
 
 

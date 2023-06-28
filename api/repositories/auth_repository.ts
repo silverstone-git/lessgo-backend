@@ -43,7 +43,7 @@ export async function getUserByEmail(email: string, passedConnection: Connection
         // the user's presence in db is needed to be validated
         return new Promise<User>(async (resolve, reject) => {
             // handler
-            passedConnection.query(`SELECT * FROM users WHERE email = '${email}' ${searchInArgonOnly ? ' AND auth_type = argon ': ''} ;`, (err, rows, fields) => {
+            passedConnection.query(`SELECT * FROM users WHERE email = '${email}' ${searchInArgonOnly ? ' AND auth_type = "argon" ': ''} ;`, (err, rows, fields) => {
                 // handle the query result
                 if(err) {
                     console.log(err);
@@ -63,7 +63,7 @@ export async function getUserByEmail(email: string, passedConnection: Connection
         const myConnection = await connection(mysqlDBName);
         return new Promise<User>(async (resolve, reject) => {
             myConnection.connect();
-            myConnection.query(`SELECT * FROM users WHERE email = '${email}' ${searchInArgonOnly ? ' AND auth_type = argon ': ''} `, async (err, rows, fields) => {
+            myConnection.query(`SELECT * FROM users WHERE email = '${email}' ${searchInArgonOnly ? ' AND auth_type = "argon" ': ''} `, async (err, rows, fields) => {
                 // handle the query result
                 if(err) {
                     console.log(err);
@@ -120,12 +120,10 @@ export async function loginUser(email: string, enteredPassword: string) {
     })
 }
 
-export async function createUser(user: User, oauth: boolean = false) {
-    // finding the user by username
-    const connectionForCreate = await connection(mysqlDBName);
-    connectionForCreate.connect();
+async function createUserCore(myConnection: Connection, user: User, oauth: boolean) {
+    return new Promise<number> ((res, rej) => {
     let exitCode = 0;
-    connectionForCreate.query(`
+    myConnection.query(`
     INSERT INTO
     users (user_id, username, email, password, is_vendor, joined_dt, auth_type, dp)
     VALUES (
@@ -144,9 +142,29 @@ export async function createUser(user: User, oauth: boolean = false) {
             console.log(err);
             exitCode = -2;
         }
+    });
+    res(exitCode);
     })
+}
+
+export async function createUser(user: User, oauth: boolean = false) {
+    // finding the user by username
+    return new Promise<number>(async (res, rej) => {
+    const connectionForCreate = await connection(mysqlDBName);
+    connectionForCreate.connect();
+    let exitCode = 0;
+    const userAlreadyInDb: User = await getUserByEmail(user.email, connectionForCreate, false);
+    if(userAlreadyInDb.username !== '') {
+        exitCode = 409;
+        res(exitCode)
+        return exitCode;
+    }
+    const exitCodeCore = await createUserCore(connectionForCreate, user, oauth);
+    exitCodeCore === 0 ? exitCode = 0: console.log();
     connectionForCreate.end();
+    res(exitCode);
     return exitCode;
+    });
     // }
 }
 

@@ -82,6 +82,9 @@ router.post('/create', async (req: any, res: any) => {
         } else if(exitCode == -2) {
             // if Connection Error
             res.status(500).json({"succ": false, "fail": "Server Error"});
+        } else if(exitCode == 409) {
+            // if Connection Error
+            res.status(500).json({"succ": false, "fail": "Account with this email already exists"});
         }
 
 	} else {
@@ -92,8 +95,6 @@ router.post('/create', async (req: any, res: any) => {
 			fail = "Username too short";
 		} else if(validCheckRes[0] == -1) {
 			fail = "Invalid Name";
-		} else if(validCheckRes[0] == -2) {
-			fail = "User with this email already exists";
 		} else if(validCheckRes[0] == -3) {
 			fail = "Connection Error";
 		}else if(validCheckRes[1] == 0){
