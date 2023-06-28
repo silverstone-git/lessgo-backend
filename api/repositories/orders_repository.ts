@@ -178,10 +178,10 @@ async function getOrdersFromUserId(myConnection: Connection, userId: number | un
 }
 
 
-async function getCartItemFromId(myConnection: Connection, cartObj: any, getImage : boolean = true, getVideo: boolean = false, getObj: boolean = false) {
+async function getCartItemFromId(myConnection: Connection, cartObj: any, getImage : boolean = true, getVideo: boolean = false, getObj: boolean = false, category: string | undefined = undefined) {
     return new Promise<any>((resolve, reject) => {
         myConnection.query(`
-            SELECT item_id, item_name, description, category, in_stock, in_stock, price_rs, date_added, hits ${getImage ? " ,image " : ""} ${getVideo ? ",video ": ""} FROM items WHERE item_id = ${cartObj.item_id};
+            SELECT item_id, item_name, description, category, in_stock, in_stock, price_rs, date_added, hits ${getImage ? " ,image " : ""} ${getVideo ? ",video ": ""} FROM items WHERE item_id = ${cartObj.item_id} ${category ? ` AND category = '${category}' ` : ''} ;
             `, (err, rows, fields) => {
                 //
                 if(err) {
@@ -210,7 +210,7 @@ async function getCartItemFromId(myConnection: Connection, cartObj: any, getImag
 }
 
 
-export async function getFromCart(userId: number) {
+export async function getFromCart(userId: number, category: string | undefined = undefined) {
     // gets cart items from orders table and returns a CartItem array or a number
 
     return new Promise<Array<CartItem> | number>( async (resolve, reject) => {
@@ -227,7 +227,9 @@ export async function getFromCart(userId: number) {
         // getting item from row[i].item_id and extending the result by row[i].count
         let i = 0;
         for(i = 0; i < cart.length; i ++) {
-            cartItemsArr.push(await getCartItemFromId(myConnection, cart[i], true))
+            const cartItem = await getCartItemFromId(myConnection, cart[i], true, false, false, category)
+            if(cartItem.itemId || cartItem.item_id)
+                cartItemsArr.push(cartItem);
         }
         myConnection.end();
         resolve(cartItemsArr);

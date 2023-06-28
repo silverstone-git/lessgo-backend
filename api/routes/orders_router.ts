@@ -2,7 +2,6 @@ import * as express from 'express';
 import isAuthed from '../repositories/authorizer';
 import * as ordersRepo from '../repositories/orders_repository';
 import { CartItem } from '../models/models';
-import * as authRepo from '../repositories/auth_repository';
 const router = express.Router();
 
 router.post("/cart", async (req, res) => {
@@ -19,7 +18,7 @@ router.post("/cart", async (req, res) => {
 		return;
     }
 
-    let itemsOrAreThey: Array<CartItem> | number = await ordersRepo.getFromCart(jwtVerify.userId);
+    let itemsOrAreThey: any = await ordersRepo.getFromCart(jwtVerify.userId, req.body['category'] === 'undefined' || !req.body['category'] ? undefined : req.body.category);
 
     // 1 => empty result
 
@@ -31,10 +30,7 @@ router.post("/cart", async (req, res) => {
             res.status(500).json({"succ": false, "message": "Some Error Occured while fetching Cart Items"});
         }
     } else {
-        const cartItemObjArr: any[] = [];
-        for(var i = 0; i < itemsOrAreThey.length; i ++) {
-            cartItemObjArr.push(CartItem.toMap(itemsOrAreThey[i]));
-        }
+        const cartItemObjArr = CartItem.toMaps(itemsOrAreThey);
         res.status(200).json({
             "succ": true,
             "itemsObjectList": cartItemObjArr,
