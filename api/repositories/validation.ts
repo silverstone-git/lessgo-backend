@@ -8,8 +8,6 @@ const checkValid = async (body: any) =>  {
 	
 	const mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 	const validArray: Array<number> = [];
-    let i: number;
-
 
 	let usernameIsAlphabetsAndSpaces = /^[a-zA-Z\s]*$/.test(body.username);
 
@@ -22,7 +20,7 @@ const checkValid = async (body: any) =>  {
 		validArray.push(-1);
 	} else {
 		// if username is alpha numeric and length is big enough, proceed to check if username already exists
-        const found = await authRepo.findUser(body.email);
+        const found = await authRepo.getUserByEmail(body.email);
         if(found.username != "") {
             // case when username already exists
             newUser = -2;

@@ -32,9 +32,8 @@ export function encodeUuidToNumber(myUuid: string) {
 }
 
 
-export async function findUser(email: string, passedConnection: Connection | boolean = false, searchInArgonOnly: boolean = false) {
+export async function getUserByEmail(email: string, passedConnection: Connection | boolean = false, searchInArgonOnly: boolean = false) {
     // finding the user by username
-    let found = false;
 
     let user: User = User.johnDoe();
 
@@ -51,7 +50,6 @@ export async function findUser(email: string, passedConnection: Connection | boo
                     resolve(user);
                 }
                 if(rows[0]) {
-                    found = true;
                     user = User.fromMap(rows[0]);
                     resolve(user);
                 } else {
@@ -72,7 +70,6 @@ export async function findUser(email: string, passedConnection: Connection | boo
                     resolve(user);
                 }
                 if(rows[0]) {
-                    found = true;
                     user = User.fromMap(rows[0]);
                     resolve(user);
                 } else {
@@ -92,7 +89,7 @@ export async function loginUser(email: string, enteredPassword: string) {
     return new Promise<User | number>(async (resolve, reject) => {
         const connectionForLogIn = await connection(mysqlDBName);
         connectionForLogIn.connect();
-        const userInDB: User = await findUser(email, connectionForLogIn, true);
+        const userInDB: User = await getUserByEmail(email, connectionForLogIn, true);
         if(userInDB.username != "") {
             // the case when user is found in the database
             let isVerified;

@@ -17,9 +17,9 @@ router.post('/isLoggedIn', (req: any, res: any) => {
 	if(Object.keys(jwtVerify).length > 0) {
 		res.status(200);
         if(req.body.sendUsername) {
-		    res.json({"isLoggedIn": true, "username": jwtVerify.name, "isVendor": jwtVerify.isVendor});
+		    res.json({"isLoggedIn": true, "username": jwtVerify.name, "isVendor": jwtVerify.isVendor, dp: jwtVerify.dp});
         } else {
-		    res.json({"isLoggedIn": true, "email": jwtVerify.email, "isVendor": jwtVerify.isVendor});
+		    res.json({"isLoggedIn": true, "email": jwtVerify.email, "isVendor": jwtVerify.isVendor, dp: jwtVerify.dp});
         }
 	} else {
 		res.status(403);
@@ -36,7 +36,7 @@ router.post('/login', async (req: any, res: any) => {
     // 1 means all good, 0 means wrong password, -1 means user not even found in database
     const toAuthenticateOrNot = await authRepo.loginUser(email, req.body.password);
     if(toAuthenticateOrNot instanceof User) {
-            const authorization: string  = jwt.sign({name: toAuthenticateOrNot.username, isVendor: toAuthenticateOrNot.isVendor, userId: toAuthenticateOrNot.userId}, jwtSecret);
+            const authorization: string  = jwt.sign({name: toAuthenticateOrNot.username, isVendor: toAuthenticateOrNot.isVendor, userId: toAuthenticateOrNot.userId, dp: toAuthenticateOrNot.dp}, jwtSecret);
             res.status(200).json({'Authorization': `Bearer ${authorization}`, 'succ': true})
     } else if(toAuthenticateOrNot == 0) {
             res.status(403).json({'succ': false, 'message': 'Wrong Password'});
@@ -50,6 +50,8 @@ router.post('/create', async (req: any, res: any) => {
     const username = req.body.username;
     const email = req.body.email;
     const vendorReq = req.body.vendorReq === "vendor" ? true : false;
+
+    // console.log("received auth token in /create -> ", req.body.Authorization );
 
     if(!(JSON.stringify(isAuthed(req.body.Authorization)) == JSON.stringify({}))) {
         // if the user is authed up already, dont do this creation
@@ -103,7 +105,7 @@ router.post('/create', async (req: any, res: any) => {
 		}else {
 			fail = "Unhandled error while creating the account";
 		}
-        console.log(`fail reason : ${fail}`);
+        // console.log(`fail reason : ${fail}`);
 		res.status(400).json({"fail": fail, "succ": false});
         return;
 	}
@@ -126,8 +128,8 @@ router.get("/getaddress", async (req: any, res: any) => {
 })
 
 router.post('/google-finduser', async (req, res) => {
-    const exists = await authRepo.findUser(req.body['email'], false);
-    if(exists) {
+    const exists = await authRepo.getUserByEmail(req.body['email'], false);
+    if(exists.username !== '') {
         res.status(200).json({exists : true});
     } else {
         res.status(200).json({exists: false});
