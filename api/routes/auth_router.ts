@@ -129,7 +129,7 @@ router.get("/getaddress", async (req: any, res: any) => {
 })
 
 router.post('/google-finduser', async (req, res) => {
-    const exists = await authRepo.getUserByEmail(req.body['email'], false);
+    const exists = await authRepo.getUserByEmail(req.body['email'], undefined, 'google');
     if(exists.username !== '') {
         res.status(200).json({exists : true});
     } else {

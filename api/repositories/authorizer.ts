@@ -12,16 +12,16 @@ function isAuthed(auth: any): Object {
     try{
         decodedJwt = jwt_decode(auth);
     } catch(e) {
-        // console.log("decoding token failed!")
-        console.log(e);
+        console.log("decoding token before verifying failed!")
+        // console.log(e);
     }
     if(_.has(decodedJwt, 'aud')) {
         // give a request to google to find out whether the jwt is valid
         // maybe by querying the email
         // and set resultToken with the usual fields accordingl
         // for now, aud check will do
-        // console.log("things are pretty googged up innit");
         if(decodedJwt.aud === process.env.GOAUTH_CLID) {
+            // console.log("\n\n\ngo auth clid matches from jwt\n\n\n\n");
             resultToken = {
                 name: decodedJwt.name,
                 userId: authRepo.encodeUuidToNumber(decodedJwt.email),
@@ -31,7 +31,6 @@ function isAuthed(auth: any): Object {
         }
     }
     else if(auth != undefined && auth.split(' ')[0] === 'Bearer') {
-        // console.log("not googged today are we");
         try{
             resultToken = jwt.verify(auth.split(' ')[1], jwtSecret);
         } catch(e) {

@@ -50,7 +50,8 @@ export async function post(item: Item) {
             '${jsDateToMysql(new Date())}',
             '${item.image}',
             '${item.video}',
-            ${item.hits}
+            ${item.hits},
+            ${item.oldPrice}
         );
         `, (err, rows, fields) => {
             if(err) {

@@ -193,7 +193,7 @@ async function getCartItemFromId(myConnection: Connection, cartObj: any, getImag
                     // CHANGE THIS LINE IF MODEL CHANGES
                     //
                     //
-                    let cartItemMap = {...rows[0], "count": cartObj.count, "cart_at": cartObj.cart_at, "order_id": cartObj.order_id, "received_at": cartObj.received_at, "placed_at": cartObj.placed_at};
+                    let cartItemMap = {...rows[0], "count": cartObj.count, "cart_at": cartObj.cart_at, "order_id": cartObj.order_id, "received_at": cartObj.received_at, "placed_at": cartObj.placed_at, "cart_id": cartObj.cart_id};
                     if(getObj)
                         resolve(cartItemMap);
                     else
@@ -322,7 +322,7 @@ export async function getListedItems(userId: number) {
 
 async function placeOrderFromId(myConnection: Connection, userId: number, address: string) {
     return new Promise<number>(async (res, rej) => {
-        myConnection.query(`UPDATE orders SET status = 3, address = '${address}', placed_at = '${jsDateToMysql(new Date())}' WHERE user_id = ${userId} and status = 2`, (err, rows, fields) => {
+        myConnection.query(`UPDATE orders SET status = 3, address = '${address}', placed_at = '${jsDateToMysql(new Date())}', cart_id = ${encodeUuidToNumber(uuidv4())} WHERE user_id = ${userId} and status = 2`, (err, rows, fields) => {
             if(err) {
                 console.log(err);
                 res(1);
