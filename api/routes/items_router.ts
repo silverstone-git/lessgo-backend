@@ -203,6 +203,28 @@ router.get('/get-hot-items', async (req, res) => {
 	} else {
 		res.status(403).json({"succ": false, "carouselArray": JSON.stringify([])});
 	}
+});
+
+router.post('/edit-item-price', async (req, res) => {
+	//
+	let jwtVerify: any = isAuthed(req.body["Authorization"]);
+	if(Object.keys(jwtVerify).length === 0 && !jwtVerify.isVendor) {
+		res.status(403).json({"succ": false, "message": "Forbidden"});
+		return;
+	}
+
+
+	let exitCode;
+	if(req.body.itemId !== undefined && req.body.newPrice !== undefined) {
+		exitCode = await itemsRepo.updatePrice(Number(req.body.itemId), Number(req.body.newPrice));
+	}
+
+	if(exitCode !== undefined) {
+	if(exitCode === 0) {
+		res.status(201).json({succ: true});
+	} else {
+		res.status(400).json({succ: false});
+	}}
 })
 
 export default router;

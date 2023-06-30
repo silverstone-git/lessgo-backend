@@ -61,18 +61,6 @@ export const categoryIcons = () => {
     return new Map(dArr);
 };
 
-/*
-export const getFullNameIcons = () => {
-    // mymap -> { elec => ["Electronic Accessories", "bolt"], .... }
-    const myMap = new Map();
-    const categories = Category;
-    let category: keyof typeof categories;
-    for(category in categories) {
-        myMap.set(categories[category], categoryIcons.get(category));
-    }
-    return myMap;
-}
-*/
 
 export const initCategoryCarousels: {
     pkd: Array<Array<string>>,
@@ -81,12 +69,16 @@ export const initCategoryCarousels: {
     mat: Array<Array<string>>, 
     other: Array<Array<string>>, 
     mach: Array<Array<string>>, 
+    groc: Array<Array<string>>, 
+    laptop: Array<Array<string>>, 
   } = {
     elec: [],
     veh: [],
     mat: [],
     pkd: [],
     mach: [],
+    groc: [],
+    laptop: [],
     other: [],
 }
 
@@ -114,8 +106,9 @@ export class Item {
     image: string;
     video: string;
     hits: number;
+    oldPrice: number;
 
-    public constructor(itemName: string, description: string, category: Category, inStock: boolean, priceRs: number, dateAdded: Date, image: string, video: string, itemId: number | undefined, hits: number = 0) {
+    public constructor(itemName: string, description: string, category: Category, inStock: boolean, priceRs: number, dateAdded: Date, image: string, video: string, itemId: number | undefined, hits: number = 0, oldPrice: number) {
         this.itemName = itemName;
         this.description = description;
         this.category = category;
@@ -126,6 +119,7 @@ export class Item {
         this.video = video;
         this.itemId = itemId;
         this.hits = hits;
+        this.oldPrice = oldPrice;
     }
 
     public static toMap(item: Item) {
@@ -141,22 +135,23 @@ export class Item {
         "video" : item.video,
         "item_id": item.itemId,
         "hits": item.hits,
+        "old_price": item.oldPrice,
         }
     }
 
     public static fromMap(map: any) {
         // returns an item instance from map
-        return new Item(map.item_name, map.description, map.category, map.in_stock === 1 ? true : false, map.price_rs, map.date_added, map.image, map.video, map.item_id, map.hits);
+        return new Item(map.item_name, map.description, map.category, map.in_stock === 1 ? true : false, map.price_rs, map.date_added, map.image, map.video, map.item_id, map.hits, map.old_price);
     }
 
 
     public static fromMapCamelCase(map: any) {
         // returns an item instance from map
-        return new Item(map.itemName, map.description, map.category, map.inStock === 1 ? true : false, map.priceRs, map.dateAdded, map.image, map.video, map.itemId, map.hits);
+        return new Item(map.itemName, map.description, map.category, map.inStock === 1 ? true : false, map.priceRs, map.dateAdded, map.image, map.video, map.itemId, map.hits, map.oldPrice);
     }
 
     public static johnDoe() {
-        return new Item('', '', Category.other, false, 0,new Date(), '', '', undefined, 0);
+        return new Item('', '', Category.other, false, 0,new Date(), '', '', undefined, 0, 0);
     }
 
 }
@@ -166,8 +161,8 @@ export class CartItem extends Item {
     cartAt: Date;
     orderId: number | undefined;
 
-    public constructor(itemName: string, description: string, category: Category, inStock: boolean, priceRs: number, dateAdded: Date, image: string, video: string, itemId: number | undefined, count: number, cartAt: Date, orderId: number | undefined, hits: number = 0) {
-        super(itemName, description, category, inStock, priceRs, dateAdded, image, video, itemId, hits);
+    public constructor(itemName: string, description: string, category: Category, inStock: boolean, priceRs: number, dateAdded: Date, image: string, video: string, itemId: number | undefined, count: number, cartAt: Date, orderId: number | undefined, hits: number = 0, oldPrice: number = 0) {
+        super(itemName, description, category, inStock, priceRs, dateAdded, image, video, itemId, hits, oldPrice);
         this.count = count;
         this.cartAt = cartAt;
         this.orderId = orderId;
@@ -182,7 +177,7 @@ export class CartItem extends Item {
     public static toMap(cartItem: CartItem): any {
         // returns an object
         return {
-            ...super.toMap(new Item(cartItem.itemName, cartItem.description, cartItem.category, cartItem.inStock, cartItem.priceRs, cartItem.dateAdded, cartItem.image, cartItem.video, cartItem.itemId, cartItem.hits)),
+            ...super.toMap(new Item(cartItem.itemName, cartItem.description, cartItem.category, cartItem.inStock, cartItem.priceRs, cartItem.dateAdded, cartItem.image, cartItem.video, cartItem.itemId, cartItem.hits, cartItem.oldPrice)),
             "count": cartItem.count,
             "date_added": cartItem.dateAdded,
             "order_id": cartItem.orderId,

@@ -2,3 +2,4 @@ node_modules/
 message.txt
 .env
 package-lock.json
+dist/

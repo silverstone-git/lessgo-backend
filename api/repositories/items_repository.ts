@@ -103,7 +103,7 @@ export async function getOne(myConnection: Connection, itemId: number, returnObj
 
     return new Promise<Item | Object>((resolve, reject) => {
         myConnection.query(`
-            SELECT ${getVideo ? '*' : 'item_id, item_name, description, category, in_stock, price_rs, date_added, image, item_id, hits'} FROM items WHERE item_id = ${itemId};
+            SELECT ${getVideo ? '*' : 'item_id, item_name, description, category, in_stock, price_rs, date_added, image, item_id, hits, old_price '} FROM items WHERE item_id = ${itemId};
             `, (err, rows, fields) => {
                 //
                 if(rows[0]) {
@@ -232,5 +232,43 @@ export async function getHotItems() {
         myConnection.connect();
         myConnection.query(`SELECT image, item_name, item_id FROM items ORDER BY hits DESC LIMIT 5; `, (err,rows) => err? handleErr(err): res(rows));
         myConnection.end();
+    })
+}
+export async function setOldAsNewPrice(myConnection: Connection, itemId: number) {
+    return new Promise<number>(async (res, rej) => {
+        myConnection.query(`
+        UPDATE items SET old_price = price_rs WHERE item_id = '${itemId}';
+        `, (err, rows, fields) => {
+            if(err) {
+                console.log(err);
+                res(1);
+            } else {
+                res(0);
+            }
+        });
+    })
+}
+export async function setNewPrice(myConnection: Connection, itemId: number, newPrice: number) {
+    return new Promise<number>(async (res, rej) => {
+        myConnection.query(`
+        UPDATE items SET price_rs = ${newPrice} WHERE item_id = '${itemId}';
+        `, (err, rows, fields) => {
+            if(err) {
+                console.log(err);
+                res(1);
+            } else {
+                res(0);
+            }
+        });
+    })
+}
+export async function updatePrice(itemId: number, newPrice: number) {
+    return new Promise<number>(async (res, rej) => {
+        const myConnection = await connection(mysqlDBName);
+        myConnection.connect();
+        const exitCode1 = await setOldAsNewPrice(myConnection, itemId);
+        const exitCode2 = await setNewPrice(myConnection, itemId, newPrice);
+        myConnection.end();
+        res(exitCode1 && exitCode2);
     })
 }
