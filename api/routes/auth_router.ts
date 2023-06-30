@@ -34,7 +34,7 @@ router.post('/login', async (req: any, res: any) => {
     // give back the jwt or a 403 with succ: false
     const email = req.body.email;
     // 1 means all good, 0 means wrong password, -1 means user not even found in database
-    const toAuthenticateOrNot = await authRepo.loginUser(email, req.body.password);
+    const toAuthenticateOrNot = await authRepo.loginUser(email, req.body.password, 'argon');
     if(toAuthenticateOrNot instanceof User) {
             const authorization: string  = jwt.sign({name: toAuthenticateOrNot.username, isVendor: toAuthenticateOrNot.isVendor, userId: toAuthenticateOrNot.userId, dp: toAuthenticateOrNot.dp}, jwtSecret);
             res.status(200).json({'Authorization': `Bearer ${authorization}`, 'succ': true})

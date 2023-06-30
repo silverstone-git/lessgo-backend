@@ -85,12 +85,12 @@ export async function getUserByEmail(email: string, passedConnection: Connection
 }
 
 
-export async function loginUser(email: string, enteredPassword: string) {
+export async function loginUser(email: string, enteredPassword: string, oauth: string = 'argon') {
 
     return new Promise<User | number>(async (resolve, reject) => {
         const connectionForLogIn = await connection(mysqlDBName);
         connectionForLogIn.connect();
-        const userInDB: User = await getUserByEmail(email, connectionForLogIn);
+        const userInDB: User = await getUserByEmail(email, connectionForLogIn, oauth);
         if(userInDB.username != "") {
             // the case when user is found in the database
             let isVerified;
