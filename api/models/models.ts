@@ -92,6 +92,8 @@ export interface ItemInterface {
     date_added: Date;
     image: string;
     video: string;
+    hits: number;
+    oldPrice: number;
 }
 
 
