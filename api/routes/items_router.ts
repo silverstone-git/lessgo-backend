@@ -171,11 +171,13 @@ router.post('/delete-listing', async (req: any, res: any) => {
 router.post('/category', async (req: any, res: any) => {
 	// place an order by authorizing from auth and cart in body
 
+	/*
 	let jwtVerify: any = isAuthed(req.body["Authorization"]);
 	if(Object.keys(jwtVerify).length === 0) {
 		res.status(403).json({"succ": false, "message": "Forbidden"});
 		return;
 	}
+	*/
 
 
 	let arrayOfRowObjects: Array<any> = await itemsRepo.carouselByCategory(req.body["category"]);
