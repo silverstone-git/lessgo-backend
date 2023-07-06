@@ -22,6 +22,8 @@
 >    last_login datetime,
 >    joined_dt datetime,
 >    address varchar(500),
+>    auth_type varchar(50),
+>    dp longtext,
 >    primary key(user_id)
 >)
 > engine = INNODB;
@@ -39,6 +41,7 @@
 >    image longtext,
 >    video longtext,
 >    hits bigint,
+>    old_price  float(13, 2),
 >    primary key(item_id)
 >)
 > engine = INNODB;
@@ -56,6 +59,7 @@
 >    received_at datetime,
 >    listed_at datetime,
 >    address varchar(500),
+>    cart_id    integer,
 >    primary key (order_id),
 >    foreign key (user_id) references users(user_id) on update cascade on delete cascade,
 >    foreign key (item_id) references items(item_id) on update cascade on delete restrict
@@ -87,3 +91,9 @@
 # Running Dev Server
 > npm install
 > npm run start
+
+# Compilation for the prod server
+> npx tsc
+
+# Running the prod server
+> npm run prod
